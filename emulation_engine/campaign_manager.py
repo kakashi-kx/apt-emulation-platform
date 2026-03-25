@@ -6,8 +6,13 @@ from typing import List, Dict, Optional
 from datetime import datetime
 import json
 import logging
+import sys
+from pathlib import Path
+
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from core.base_emulator import AdversaryEmulator, EngagementResult
-from apt_profiles import APT29Emulator, LazarusEmulator, RansomwareEmulator
 
 logger = logging.getLogger(__name__)
 
@@ -19,13 +24,33 @@ class CampaignManager:
         self.target_environment = target_environment or {}
         self.campaigns = []
         self.results = []
+        self.emulators = {}
         
-        # Register available emulators
-        self.emulators = {
-            'apt29': APT29Emulator,
-            'lazarus': LazarusEmulator,
-            'ransomware': RansomwareEmulator
-        }
+        # Dynamically import APT profiles
+        self._load_emulators()
+    
+    def _load_emulators(self):
+        """Load available APT emulators"""
+        try:
+            from apt_profiles.apt29 import APT29Emulator
+            self.emulators['apt29'] = APT29Emulator
+            logger.info("✅ Loaded APT29 emulator")
+        except ImportError as e:
+            logger.warning(f"Could not load APT29: {e}")
+        
+        try:
+            from apt_profiles.lazarus import LazarusEmulator
+            self.emulators['lazarus'] = LazarusEmulator
+            logger.info("✅ Loaded Lazarus emulator")
+        except ImportError as e:
+            logger.warning(f"Could not load Lazarus: {e}")
+        
+        try:
+            from apt_profiles.ransomware import RansomwareEmulator
+            self.emulators['ransomware'] = RansomwareEmulator
+            logger.info("✅ Loaded Ransomware emulator")
+        except ImportError as e:
+            logger.warning(f"Could not load Ransomware: {e}")
     
     def list_available_apt_groups(self) -> List[str]:
         """List all available APT groups"""
@@ -57,10 +82,15 @@ class CampaignManager:
         
         for apt_group in self.list_available_apt_groups():
             try:
+                logger.info(f"\n{'='*60}")
+                logger.info(f"Running {apt_group.upper()} campaign")
+                logger.info(f"{'='*60}")
                 result = self.run_campaign(apt_group)
                 results.append(result)
             except Exception as e:
                 logger.error(f"Failed to run {apt_group}: {e}")
+                import traceback
+                traceback.print_exc()
         
         return results
     
@@ -69,34 +99,13 @@ class CampaignManager:
         data = {
             'timestamp': datetime.now().isoformat(),
             'target_environment': self.target_environment,
-            'campaigns': [result.to_json() for result in self.results]
+            'campaigns': []
         }
+        
+        for result in self.results:
+            data['campaigns'].append(json.loads(result.to_json()))
         
         with open(filename, 'w') as f:
             json.dump(data, f, indent=2)
         
-        logger.info(f"Results saved to {filename}")
-    
-    def compare_campaigns(self) -> Dict:
-        """Compare results across campaigns"""
-        comparison = {
-            'campaigns': [],
-            'metrics': {}
-        }
-        
-        for result in self.results:
-            comparison['campaigns'].append({
-                'name': result.campaign_name,
-                'success_rate': result.overall_success_rate,
-                'detection_rate': result.detection_rate,
-                'impact_score': result.impact_score,
-                'duration': result.duration_seconds
-            })
-        
-        # Calculate averages
-        if self.results:
-            comparison['metrics']['avg_success_rate'] = sum(r.overall_success_rate for r in self.results) / len(self.results)
-            comparison['metrics']['avg_detection_rate'] = sum(r.detection_rate for r in self.results) / len(self.results)
-            comparison['metrics']['avg_impact'] = sum(r.impact_score for r in self.results) / len(self.results)
-        
-        return comparison
+        logger.info(f"✅ Results saved to {filename}")
