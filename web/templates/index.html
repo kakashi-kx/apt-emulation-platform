@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto text-center">
+        <h1 class="display-4 mt-5">APT Emulation Platform</h1>
+        <p class="lead">Simulate real APT attacks and quantify business risk</p>
+        
+        <div class="row mt-5">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <i class="fas fa-bug fa-3x text-danger"></i>
+                        <h5 class="card-title mt-3">APT29 Emulation</h5>
+                        <p class="card-text">Russian state-sponsored attacks (Cozy Bear)</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <i class="fas fa-skull fa-3x text-warning"></i>
+                        <h5 class="card-title mt-3">Lazarus Group</h5>
+                        <p class="card-text">North Korean destructive attacks</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <i class="fas fa-lock fa-3x text-info"></i>
+                        <h5 class="card-title mt-3">Ransomware</h5>
+                        <p class="card-text">Modern ransomware operators</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-5">
+            <a href="/campaigns" class="btn btn-danger btn-lg">
+                <i class="fas fa-play"></i> Start Assessment
+            </a>
+            <a href="/dashboard" class="btn btn-outline-dark btn-lg ms-3">
+                <i class="fas fa-chart-line"></i> View Dashboard
+            </a>
+        </div>
+        
+        <div class="alert alert-warning mt-5">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>Disclaimer:</strong> Only use against systems you own or have permission to test.
+        </div>
+    </div>
+</div>
+{% endblock %}
