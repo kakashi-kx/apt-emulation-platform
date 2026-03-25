@@ -1,0 +1,28 @@
+# TechCorp Security Assessment Configuration
+target_environment:
+  name: "TechCorp Production"
+  detection_maturity: 0.6
+  industry: "Financial Services"
+  
+  critical_assets:
+    - "customer_database"
+    - "payment_system"
+    - "internal_network"
+  
+  defenses:
+    antivirus: "CrowdStrike"
+    siem: "Splunk"
+    edr: "None"
+    firewall: "Palo Alto"
+    dlp: "None"
+  
+  vulnerabilities:
+    - "unpatched Exchange server"
+    - "weak VPN credentials"
+    - "no MFA for admin accounts"
+    - "flat network architecture"
+
+assessment:
+  scenario: "APT29 Attack Simulation"
+  objective: "Test detection capabilities and identify gaps"
+  duration: "4 hours"
