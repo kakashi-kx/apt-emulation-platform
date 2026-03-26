@@ -1,0 +1,33 @@
+# ============================================
+# MY COMPANY CONFIGURATION
+# COPY THIS FILE AND REPLACE WITH YOUR DETAILS
+# ============================================
+
+company:
+  name: "My Company"
+  environment: "production"  # or staging, test
+
+# REPLACE WITH YOUR NETWORK DETAILS
+network:
+  domain: "mycompany.local"
+  ip_range: "10.0.0.0/16"
+  vpn: "vpn.mycompany.com"
+
+# REPLACE WITH YOUR SECURITY TOOLS
+security_tools:
+  email_gateway: "Mimecast"
+  edr: "CrowdStrike"
+  siem: "Splunk"
+  firewall: "Palo Alto"
+
+# REPLACE WITH YOUR TEST CREDENTIALS (for authorized testing only)
+test_credentials:
+  test_user: "testuser@mycompany.local"
+  test_password: "Test123!"
+  
+# REPLACE WITH WHAT YOU WANT TO TEST
+test_scope:
+  - "email_security"
+  - "endpoint_detection"
+  - "network_monitoring"
+  - "data_loss_prevention"
