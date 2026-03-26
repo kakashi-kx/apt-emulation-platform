@@ -6,152 +6,34 @@
 # 1. Copy this file to: user_config.yaml
 # 2. Replace all values marked with YOUR_ with your actual details
 # 3. Run: python3 main.py --config user_config.yaml
-#
-# NOTE: Keep this file secure! Contains sensitive information.
 # ============================================
 
-# ============================================
-# COMPANY INFORMATION
-# ============================================
 company:
-  name: "YOUR_COMPANY_NAME"           # e.g., "Acme Corporation"
-  environment: "production"            # Options: production, staging, test
-  industry: "YOUR_INDUSTRY"            # e.g., "Financial Services", "Healthcare"
+  name: "YOUR_COMPANY_NAME"
+  environment: "production"
 
-# ============================================
-# NETWORK SETTINGS
-# ============================================
 network:
-  domain: "YOUR_COMPANY_DOMAIN"        # e.g., "acmecorp.local"
-  ip_range: "YOUR_IP_RANGE"            # e.g., "10.0.0.0/16"
-  dns_server: "YOUR_DNS_SERVER"        # e.g., "8.8.8.8" or internal DNS
-  internal_hosts:                      # List of internal hosts for testing
-    - "fileserver.YOUR_DOMAIN"
-    - "database.YOUR_DOMAIN"
-    - "webapp.YOUR_DOMAIN"
+  domain: "YOUR_COMPANY_DOMAIN"
 
-# ============================================
-# EMAIL SECURITY TESTING
-# ============================================
 email:
-  enabled: true                        # Set to false to skip email tests
-  server: "smtp.YOUR_DOMAIN"           # e.g., "smtp.acmecorp.com"
-  port: 25                             # SMTP port (25, 465, 587)
-  use_tls: false                       # Set true if using TLS
-  test_sender: "security-test@YOUR_DOMAIN"
-  test_recipient: "security-alerts@YOUR_DOMAIN"
-  
-  # Phishing test templates
-  phishing_templates:
-    - subject: "Urgent: Password Reset Required"
-      body: "Click here to reset your password: http://test-phishing.YOUR_DOMAIN"
-    - subject: "Invoice Payment Overdue"
-      body: "Please review attached invoice for immediate payment"
-    - subject: "Your Account Has Been Compromised"
-      body: "Immediate action required to secure your account"
+  enabled: true
+  server: "smtp.YOUR_DOMAIN"
+  test_recipient: "security-test@YOUR_DOMAIN"
 
-# ============================================
-# ENDPOINT DETECTION (EDR) SETTINGS
-# ============================================
 edr:
-  enabled: true                        # Set to false to skip EDR tests
-  vendor: "YOUR_EDR_VENDOR"            # Options: crowdstrike, sentinelone, defender, carbonblack
-  api_key: "YOUR_EDR_API_KEY"          # Your EDR API key (keep secure!)
-  api_url: "https://api.YOUR_EDR_VENDOR.com"
-  
-  # Test files to check detection
-  test_files:
-    eicar: true                        # Test with EICAR test file
-    custom: "/path/to/your/test_file"  # Path to custom test file
+  enabled: true
+  vendor: "YOUR_EDR_VENDOR"
 
-# ============================================
-# SIEM / LOGGING SETTINGS
-# ============================================
 siem:
-  enabled: true                        # Set to false to skip SIEM checks
-  vendor: "YOUR_SIEM_VENDOR"           # Options: splunk, elastic, qradar, sentinel
-  url: "https://splunk.YOUR_DOMAIN:8089"
-  api_key: "YOUR_SIEM_API_KEY"         # Your SIEM API key (keep secure!)
-  
-  # Search queries to verify detection
-  detection_queries:
-    email_test: 'index=security source=email_filter "phishing test"'
-    edr_test: 'index=endpoint source=edr "eicar" OR "test"'
-    network_test: 'index=network source=firewall "test_scan"'
+  enabled: true
+  url: "https://splunk.YOUR_DOMAIN"
 
-# ============================================
-# TEST SCRIPTS
-# ============================================
-# If you have existing security test scripts, specify them here
 test_scripts:
-  path: "/opt/security/tests/"         # Directory containing your test scripts
-  email_test: "send_phishing_test.py"
-  edr_test: "edr_detection_test.py"
-  network_test: "network_scan_test.py"
-  credential_test: "credential_test.py"
-  lateral_move_test: "lateral_move_test.py"
+  path: "/opt/security/tests/"
 
-# ============================================
-# RANSOMWARE TESTING
-# ============================================
 ransomware:
-  enabled: true                        # Set to false to skip ransomware tests
-  test_file_path: "/tmp/ransomware_test.txt"  # Safe location for test files
-  safe_mode: true                      # Use safe, non-destructive tests only
-  backup_server: "backup.YOUR_DOMAIN"  # Your backup server for testing
+  test_file_path: "/tmp/ransomware_test.txt"
 
-# ============================================
-# CREDENTIAL TESTING
-# ============================================
-credentials:
-  enabled: true                        # Set to false to skip credential tests
-  test_user: "testuser@YOUR_DOMAIN"    # Test account (for authorized testing only!)
-  test_password: "TestPassword123!"    # Test password (change this!)
-  
-  # WARNING: Only use test accounts, never real user credentials!
-
-# ============================================
-# NOTIFICATIONS
-# ============================================
-notifications:
-  enabled: true                        # Send notifications after tests
-  slack_webhook: "https://hooks.slack.com/services/YOUR/WEBHOOK"
-  email_alert: "security-team@YOUR_DOMAIN"
-  
-  # What to notify about
-  notify_on:
-    - campaign_start
-    - campaign_complete
-    - detection_failure
-    - detection_success
-
-# ============================================
-# REPORTING
-# ============================================
-reporting:
-  output_dir: "./reports"              # Directory to save reports
-  formats:                             # Report formats to generate
-    - "json"
-    - "html"
-    - "pdf"                            # Requires additional dependencies
-  include_screenshots: true            # Include screenshots in reports
-  executive_summary: true              # Generate executive summary
-
-# ============================================
-# ADVANCED SETTINGS
-# ============================================
 advanced:
-  safe_mode: true                      # Run in safe mode (no real attacks)
-  parallel_execution: false            # Run techniques in parallel
-  timeout_seconds: 300                 # Timeout for each technique
-  retry_failed: true                   # Retry failed techniques once
-  log_level: "INFO"                    # Options: DEBUG, INFO, WARNING, ERROR
-
-# ============================================
-# SECURITY (DO NOT CHANGE)
-# ============================================
-# These settings ensure safe operation
-security:
-  validate_targets: true               # Verify targets before testing
-  require_confirmation: false          # Ask before running destructive tests
-  backup_before_test: false            # Backup data before destructive tests
+  safe_mode: true
+  log_level: "INFO"
