@@ -1,139 +1,109 @@
-#!/usr/bin/env python3
 """
-APT Emulation Platform - Main Entry Point
+Campaign Manager - Orchestrates emulation campaigns
 """
 
-import argparse
-import sys
+from typing import List, Dict, Optional
+from datetime import datetime
 import json
+import logging
+import sys
 from pathlib import Path
 
-# Add project root to path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from emulation_engine.campaign_manager import CampaignManager
-from reporting.report_generator import ReportGenerator
-from utils.logger import setup_logger
+from core.base_emulator import AdversaryEmulator, EngagementResult
 
-logger = setup_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="APT Emulation Platform - Full-Spectrum Adversary Emulation"
-    )
+class CampaignManager:
+    """Manages and orchestrates emulation campaigns"""
     
-    parser.add_argument(
-        "--apt-group",
-        choices=["apt29", "lazarus", "ransomware", "all"],
-        default="all",
-        help="APT group to emulate"
-    )
+    def __init__(self, target_environment: Optional[Dict] = None):
+        self.target_environment = target_environment or {}
+        self.campaigns = []
+        self.results = []
+        self.emulators = {}
+        
+        # Load emulators with config
+        self._load_emulators()
     
-    parser.add_argument(
-        "--target",
-        type=str,
-        default="production",
-        help="Target environment (production, staging, dev)"
-    )
+    def _load_emulators(self):
+        """Load available APT emulators with config"""
+        try:
+            from apt_profiles.apt29 import APT29Emulator
+            self.emulators['apt29'] = lambda: APT29Emulator(self.target_environment)
+            logger.info("✅ Loaded APT29 emulator")
+        except ImportError as e:
+            logger.warning(f"Could not load APT29: {e}")
+        
+        try:
+            from apt_profiles.lazarus import LazarusEmulator
+            self.emulators['lazarus'] = lambda: LazarusEmulator(self.target_environment)
+            logger.info("✅ Loaded Lazarus emulator")
+        except ImportError as e:
+            logger.warning(f"Could not load Lazarus: {e}")
+        
+        try:
+            from apt_profiles.ransomware import RansomwareEmulator
+            self.emulators['ransomware'] = lambda: RansomwareEmulator(self.target_environment)
+            logger.info("✅ Loaded Ransomware emulator")
+        except ImportError as e:
+            logger.warning(f"Could not load Ransomware: {e}")
     
-    parser.add_argument(
-        "--safe-mode",
-        action="store_true",
-        help="Run in safe mode (no actual commands executed)"
-    )
+    def list_available_apt_groups(self) -> List[str]:
+        """List all available APT groups"""
+        return list(self.emulators.keys())
     
-    parser.add_argument(
-        "--output",
-        type=str,
-        default="report.json",
-        help="Output report filename"
-    )
+    def run_campaign(self, apt_group: str) -> EngagementResult:
+        """Run a single campaign for specified APT group"""
+        
+        if apt_group not in self.emulators:
+            raise ValueError(f"Unknown APT group: {apt_group}. Available: {self.list_available_apt_groups()}")
+        
+        logger.info(f"Starting {apt_group} campaign...")
+        
+        # Create emulator instance with config
+        emulator = self.emulators[apt_group]()
+        
+        # Run campaign
+        result = emulator.run_campaign()
+        
+        # Store result
+        self.results.append(result)
+        
+        return result
     
-    parser.add_argument(
-        "--detection-maturity",
-        type=float,
-        default=0.5,
-        choices=[0.0, 0.25, 0.5, 0.75, 1.0],
-        help="Detection maturity level (0-1)"
-    )
+    def run_all_campaigns(self) -> List[EngagementResult]:
+        """Run all available APT campaigns"""
+        results = []
+        
+        for apt_group in self.list_available_apt_groups():
+            try:
+                logger.info(f"\n{'='*60}")
+                logger.info(f"Running {apt_group.upper()} campaign")
+                logger.info(f"{'='*60}")
+                result = self.run_campaign(apt_group)
+                results.append(result)
+            except Exception as e:
+                logger.error(f"Failed to run {apt_group}: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        return results
     
-    args = parser.parse_args()
-    
-    print("""
-    ╔═══════════════════════════════════════════════════════════════╗
-    ║     APT Emulation Platform - Full-Spectrum Adversary Emulation ║
-    ║                         Version 1.0.0                          ║
-    ╚═══════════════════════════════════════════════════════════════╝
-    """)
-    
-    # Configure target environment
-    target_environment = {
-        'name': args.target,
-        'detection_maturity': args.detection_maturity,
-        'safe_mode': args.safe_mode
-    }
-    
-    logger.info(f"Target environment: {args.target}")
-    logger.info(f"Detection maturity: {args.detection_maturity}")
-    logger.info(f"Safe mode: {args.safe_mode}")
-    
-    # Initialize campaign manager
-    manager = CampaignManager(target_environment)
-    
-    # List available APT groups
-    available = manager.list_available_apt_groups()
-    logger.info(f"Available APT groups: {', '.join(available)}")
-    
-    # Run campaigns
-    results = []
-    
-    if args.apt_group == "all":
-        logger.info("Running all APT campaigns...")
-        results = manager.run_all_campaigns()
-    else:
-        logger.info(f"Running {args.apt_group} campaign...")
-        result = manager.run_campaign(args.apt_group)
-        results = [result]
-    
-    # Save results
-    manager.save_results("campaign_results.json")
-    
-    # Generate reports
-    report_gen = ReportGenerator()
-    
-    # Print console report for each campaign
-    for result in results:
-        report_gen.print_console_report(result)
-    
-    # Generate full report
-    full_report = report_gen.generate_full_report(results, args.output)
-    
-    # Print executive summary
-    print("\n" + "="*70)
-    print("📋 EXECUTIVE SUMMARY")
-    print("="*70)
-    
-    summary = full_report['executive_summary']
-    print(f"  Total Campaigns: {summary['total_campaigns']}")
-    print(f"  Overall Success Rate: {summary['overall_success_rate']*100:.1f}%")
-    print(f"  Overall Detection Rate: {summary['overall_detection_rate']*100:.1f}%")
-    print(f"  Risk Score: {summary['risk_score']:.1f}/10.0")
-    
-    if summary.get('critical_findings'):
-        print("\n  🔴 CRITICAL FINDINGS:")
-        for finding in summary['critical_findings']:
-            print(f"    • {finding['finding']}")
-    
-    if summary.get('recommendations'):
-        print("\n  💡 RECOMMENDATIONS:")
-        for rec in summary['recommendations']:
-            print(f"    • {rec}")
-    
-    print("\n" + "="*70)
-    print(f"✅ Complete! Report saved to: {args.output}")
-    print("="*70)
-
-
-if __name__ == "__main__":
-    main()
+    def save_results(self, filename: str = "campaign_results.json"):
+        """Save all results to JSON file"""
+        data = {
+            'timestamp': datetime.now().isoformat(),
+            'target_environment': self.target_environment,
+            'campaigns': []
+        }
+        
+        for result in self.results:
+            data['campaigns'].append(json.loads(result.to_json()))
+        
+        with open(filename, 'w') as f:
+            json.dump(data, f, indent=2)
+        
+        logger.info(f"✅ Results saved to {filename}")
