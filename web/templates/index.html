@@ -13,9 +13,9 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
             min-height: 100vh;
-            color: #fff;
+            color: #c9d1d9;
         }
         
         .container {
@@ -31,92 +31,111 @@
         }
         
         .logo {
-            font-size: 48px;
+            font-size: 64px;
             margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
         }
         
         h1 {
-            font-size: 42px;
+            font-size: 48px;
             margin-bottom: 15px;
-            background: linear-gradient(135deg, #fff, #a8c0ff);
+            background: linear-gradient(135deg, #ffffff, #58a6ff, #ff6b6b);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .subtitle {
             font-size: 18px;
-            color: #a0a0a0;
+            color: #8b949e;
+        }
+        
+        .creator-tag {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 5px 12px;
+            background: rgba(88, 166, 255, 0.1);
+            border-radius: 20px;
+            font-size: 14px;
+            color: #58a6ff;
         }
         
         /* Cards */
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 50px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+            margin-bottom: 48px;
         }
         
         .card {
-            background: rgba(255,255,255,0.05);
+            background: rgba(22, 27, 34, 0.8);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(48, 54, 61, 0.5);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
             cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.1);
         }
         
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            background: rgba(255,255,255,0.1);
+            border-color: #58a6ff;
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.2);
         }
         
         .card-icon {
             font-size: 48px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         
         .card h3 {
-            font-size: 24px;
-            margin-bottom: 10px;
+            font-size: 22px;
+            margin-bottom: 12px;
+            color: #f0f6fc;
         }
         
         .card p {
-            color: #b0b0b0;
-            margin-bottom: 15px;
-            line-height: 1.6;
+            color: #8b949e;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 16px;
         }
         
         .badge {
             display: inline-block;
-            background: rgba(220,53,69,0.2);
+            background: rgba(220, 53, 69, 0.2);
             color: #ff6b6b;
-            padding: 5px 12px;
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 12px;
             font-weight: 500;
         }
         
         .techniques {
-            margin-top: 15px;
-            font-size: 12px;
-            color: #808080;
+            margin-top: 12px;
+            font-size: 11px;
+            color: #6e7681;
         }
         
         /* Control Panel */
         .control-panel {
-            background: rgba(255,255,255,0.05);
+            background: rgba(22, 27, 34, 0.8);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 30px;
-            margin-bottom: 50px;
-            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 48px;
+            border: 1px solid rgba(48, 54, 61, 0.5);
         }
         
         .control-panel h2 {
-            margin-bottom: 25px;
-            font-size: 28px;
+            margin-bottom: 24px;
+            font-size: 24px;
         }
         
         .form-group {
@@ -127,23 +146,23 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: #ccc;
+            color: #c9d1d9;
         }
         
         select, input {
             width: 100%;
             padding: 12px 15px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 10px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 8px;
             color: #fff;
-            font-size: 16px;
+            font-size: 14px;
             transition: all 0.3s ease;
         }
         
         select:focus, input:focus {
             outline: none;
-            border-color: #ff6b6b;
+            border-color: #58a6ff;
         }
         
         .btn {
@@ -153,7 +172,7 @@
             padding: 14px 30px;
             font-size: 16px;
             font-weight: 600;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             width: 100%;
@@ -161,7 +180,7 @@
         
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(220,53,69,0.4);
+            box-shadow: 0 5px 20px rgba(220, 53, 69, 0.4);
         }
         
         .btn:disabled {
@@ -171,11 +190,11 @@
         
         /* Results */
         .results {
-            background: rgba(255,255,255,0.05);
+            background: rgba(22, 27, 34, 0.8);
             backdrop-filter: blur(10px);
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 1px solid rgba(48, 54, 61, 0.5);
         }
         
         .results h2 {
@@ -190,15 +209,16 @@
         }
         
         .metric {
-            background: rgba(0,0,0,0.3);
+            background: rgba(13, 17, 23, 0.8);
             padding: 20px;
-            border-radius: 15px;
+            border-radius: 12px;
             text-align: center;
+            border: 1px solid #30363d;
         }
         
         .metric-label {
-            font-size: 14px;
-            color: #aaa;
+            font-size: 12px;
+            color: #8b949e;
             margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -209,30 +229,30 @@
             font-weight: bold;
         }
         
-        .metric-value.success { color: #4caf50; }
+        .metric-value.success { color: #2ea043; }
         .metric-value.danger { color: #dc3545; }
-        .metric-value.warning { color: #ffc107; }
+        .metric-value.warning { color: #f0883e; }
         
         .status {
             padding: 15px;
-            border-radius: 10px;
+            border-radius: 8px;
             margin-top: 20px;
         }
         
         .status.running {
-            background: rgba(255,193,7,0.2);
-            border: 1px solid #ffc107;
-            color: #ffc107;
+            background: rgba(240, 136, 62, 0.2);
+            border: 1px solid #f0883e;
+            color: #f0883e;
         }
         
         .status.complete {
-            background: rgba(76,175,80,0.2);
-            border: 1px solid #4caf50;
-            color: #4caf50;
+            background: rgba(46, 160, 67, 0.2);
+            border: 1px solid #2ea043;
+            color: #2ea043;
         }
         
         .status.error {
-            background: rgba(220,53,69,0.2);
+            background: rgba(220, 53, 69, 0.2);
             border: 1px solid #dc3545;
             color: #dc3545;
         }
@@ -246,27 +266,80 @@
         .technique-item {
             padding: 10px;
             margin: 5px 0;
-            background: rgba(0,0,0,0.2);
+            background: rgba(13, 17, 23, 0.6);
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
         }
         
-        .technique-item.success { border-left: 3px solid #4caf50; }
+        .technique-item.success { border-left: 3px solid #2ea043; }
         .technique-item.failed { border-left: 3px solid #dc3545; }
         
+        /* Footer with Glowing Badges */
         .footer {
             text-align: center;
-            margin-top: 50px;
+            margin-top: 60px;
             padding-top: 30px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            color: #666;
+            border-top: 1px solid rgba(48, 54, 61, 0.5);
+        }
+        
+        .support-btn {
+            background: linear-gradient(135deg, #ff5e5e, #dc3545);
+            border: none;
+            padding: 12px 32px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+        }
+        
+        .support-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(220, 53, 69, 0.8);
+        }
+        
+        .glow-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 40px;
             font-size: 14px;
+            color: #c9d1d9;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .glow-badge:hover {
+            border-color: #58a6ff;
+            box-shadow: 0 0 12px rgba(88, 166, 255, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .badge-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .credit-text {
+            font-size: 13px;
+            color: #58a6ff;
+            margin-top: 20px;
         }
         
         @media (max-width: 768px) {
             .container { padding: 20px; }
             h1 { font-size: 32px; }
             .cards { grid-template-columns: 1fr; }
+            .badge-group { gap: 10px; }
+            .glow-badge { padding: 6px 12px; font-size: 12px; }
         }
     </style>
 </head>
@@ -276,6 +349,9 @@
             <div class="logo">🎯</div>
             <h1>APT Emulation Platform</h1>
             <p class="subtitle">Simulate real APT attacks • Quantify business risk • Improve security</p>
+            <div class="creator-tag">
+                👨‍💻 Created by <strong>kakashi-kx</strong>
+            </div>
         </div>
         
         <div class="cards">
@@ -283,44 +359,44 @@
                 <div class="card-icon">🐻</div>
                 <h3>APT29 (Cozy Bear)</h3>
                 <p>Russian state-sponsored group. Known for SolarWinds attack, cloud compromise, diplomatic targeting.</p>
-                <span class="badge">11 Techniques</span>
-                <div class="techniques">Spearphishing • PowerShell • LSASS Dump • Lateral Movement</div>
+                <span class="badge">📊 11 Techniques</span>
+                <div class="techniques">🎣 Spearphishing • 💻 PowerShell • 🔑 LSASS Dump • 🌐 Lateral Movement</div>
             </div>
             
             <div class="card" onclick="selectAPT('lazarus')">
                 <div class="card-icon">💀</div>
                 <h3>Lazarus Group</h3>
                 <p>North Korean state-sponsored. Known for WannaCry, Sony Pictures hack, cryptocurrency theft.</p>
-                <span class="badge">7 Techniques</span>
-                <div class="techniques">Spearphishing • User Execution • Data Destruction</div>
+                <span class="badge">📊 7 Techniques</span>
+                <div class="techniques">🎣 Spearphishing • 👤 User Execution • 💥 Data Destruction</div>
             </div>
             
             <div class="card" onclick="selectAPT('ransomware')">
                 <div class="card-icon">🔒</div>
                 <h3>Ransomware Operator</h3>
                 <p>Modern ransomware kill chain. Emulates typical ransomware attack patterns.</p>
-                <span class="badge">7 Techniques</span>
-                <div class="techniques">Exploit • Process Injection • Data Encryption</div>
+                <span class="badge">📊 7 Techniques</span>
+                <div class="techniques">⚡ Exploit • 💉 Process Injection • 🔐 Data Encryption</div>
             </div>
         </div>
         
         <div class="control-panel">
             <h2>🚀 Run Security Assessment</h2>
             <div class="form-group">
-                <label>Select APT Group</label>
+                <label>🎯 Select APT Group</label>
                 <select id="aptGroup">
-                    <option value="apt29">APT29 (Cozy Bear) - Russian State</option>
-                    <option value="lazarus">Lazarus Group - North Korea</option>
-                    <option value="ransomware">Ransomware Operator</option>
+                    <option value="apt29">🐻 APT29 (Cozy Bear) - Russian State</option>
+                    <option value="lazarus">💀 Lazarus Group - North Korea</option>
+                    <option value="ransomware">🔒 Ransomware Operator</option>
                 </select>
             </div>
             <div class="form-group">
-                <label>Detection Maturity (0-1)</label>
+                <label>📈 Detection Maturity (0-1)</label>
                 <input type="range" id="detectionMaturity" min="0" max="1" step="0.1" value="0.5">
                 <div style="display: flex; justify-content: space-between; margin-top: 5px;">
-                    <span>Basic</span>
-                    <span>Moderate</span>
-                    <span>Advanced</span>
+                    <span>🟢 Basic</span>
+                    <span>🟡 Moderate</span>
+                    <span>🔴 Advanced</span>
                 </div>
             </div>
             <button class="btn" id="runBtn" onclick="runCampaign()">▶ Run Assessment</button>
@@ -330,15 +406,15 @@
             <h2>📊 Assessment Results</h2>
             <div class="metrics">
                 <div class="metric">
-                    <div class="metric-label">Attack Success Rate</div>
+                    <div class="metric-label">🎯 Attack Success Rate</div>
                     <div class="metric-value danger" id="successRate">--%</div>
                 </div>
                 <div class="metric">
-                    <div class="metric-label">Detection Rate</div>
+                    <div class="metric-label">🛡️ Detection Rate</div>
                     <div class="metric-value warning" id="detectionRate">--%</div>
                 </div>
                 <div class="metric">
-                    <div class="metric-label">Business Impact</div>
+                    <div class="metric-label">💥 Business Impact</div>
                     <div class="metric-value danger" id="impactScore">--/10</div>
                 </div>
             </div>
@@ -346,16 +422,51 @@
             <div id="techniqueList" class="technique-list"></div>
         </div>
         
+        <!-- Footer with Glowing Badges -->
         <div class="footer">
-            <p>Powered by MITRE ATT&CK Framework • Simulates Real Adversary Behavior</p>
-            <p style="margin-top: 10px;">⚠️ Only use against systems you own or have permission to test</p>
+            <!-- Support Button - Opens UPI with ₹0 -->
+            <a href="upi://pay?pa=kakashikx@okhdfcbank&pn=Kakashi%20KX&am=0&cu=INR" 
+               style="text-decoration: none;">
+                <button class="support-btn">
+                    ☕ Support the Project
+                </button>
+            </a>
+            <p style="font-size: 12px; color: #6e7681; margin-top: 10px;">
+                Opens UPI app • Enter any amount (Minimum ₹100)
+            </p>
+            
+            <!-- Social Badges -->
+            <div class="badge-group">
+                <a href="https://github.com/kakashi-kx" target="_blank" class="glow-badge">
+                    🐙 GitHub
+                </a>
+                <a href="https://www.linkedin.com/in/abhixjith" target="_blank" class="glow-badge">
+                    🔗 LinkedIn
+                </a>
+                <a href="https://github.com/kakashi-kx/apt-emulation-platform" target="_blank" class="glow-badge">
+                    ⭐ Star on GitHub
+                </a>
+                <a href="#" class="glow-badge">
+                    📧 Email
+                </a>
+            </div>
+            
+            <div class="credit-text">
+                👨‍💻 Created with ❤️ by <strong>kakashi-kx</strong> | Security Researcher
+            </div>
+            <p style="font-size: 12px; color: #6e7681; margin-top: 15px;">
+                🔓 Free & Open Source • MIT License • Powered by MITRE ATT&CK Framework
+            </p>
+            <p style="font-size: 11px; color: #484f58; margin-top: 10px;">
+                ⚠️ Only use against systems you own or have permission to test
+            </p>
         </div>
     </div>
     
     <script>
         function selectAPT(group) {
             document.getElementById('aptGroup').value = group;
-            document.getElementById('aptGroup').style.borderColor = '#ff6b6b';
+            document.getElementById('aptGroup').style.borderColor = '#58a6ff';
             setTimeout(() => {
                 document.getElementById('aptGroup').style.borderColor = '';
             }, 500);
@@ -402,14 +513,14 @@
                     document.getElementById('impactScore').innerHTML = data.impact_score.toFixed(1);
                     
                     if (data.techniques) {
-                        techniqueList.innerHTML = '<h4>Technique Results:</h4>';
+                        techniqueList.innerHTML = '<h4>📋 Technique Results:</h4>';
                         data.techniques.forEach(tech => {
                             const statusClass = tech.success ? 'success' : 'failed';
                             const statusIcon = tech.success ? '✅' : '❌';
                             techniqueList.innerHTML += `
                                 <div class="technique-item ${statusClass}">
                                     ${statusIcon} <strong>${tech.name}</strong> (${tech.id}) - ${tech.tactic}
-                                    ${tech.detected ? '<span style="color: #ffc107;"> 🛡️ Detected</span>' : ''}
+                                    ${tech.detected ? '<span style="color: #f0883e;"> 🛡️ Detected</span>' : ''}
                                 </div>
                             `;
                         });
