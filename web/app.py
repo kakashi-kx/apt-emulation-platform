@@ -1,18 +1,76 @@
 #!/usr/bin/env python3
 """
-Main Flask Application Entry Point
+APT Emulation Platform - Simple Web Interface
 """
 
+from flask import Flask, render_template, jsonify, request
 import sys
-import os
 from pathlib import Path
 
-# Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from web import create_app
+app = Flask(__name__)
 
-app = create_app()
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/api/run', methods=['POST'])
+def run_campaign():
+    """Run an APT campaign"""
+    data = request.json
+    apt_group = data.get('apt_group', 'apt29')
+    detection_maturity = data.get('detection_maturity', 0.5)
+    safe_mode = data.get('safe_mode', True)
+    
+    try:
+        from emulation_engine.campaign_manager import CampaignManager
+        
+        manager = CampaignManager({
+            'name': 'web_assessment',
+            'detection_maturity': detection_maturity,
+            'safe_mode': safe_mode
+        })
+        
+        result = manager.run_campaign(apt_group)
+        
+        # Format techniques for display
+        techniques = []
+        for tech in result.techniques_executed:
+            techniques.append({
+                'id': tech.id,
+                'name': tech.name,
+                'tactic': tech.tactic,
+                'success': tech in result.successful_techniques,
+                'detected': any(e.get('technique') == tech.name for e in result.detection_events)
+            })
+        
+        return jsonify({
+            'success': True,
+            'success_rate': result.overall_success_rate,
+            'detection_rate': result.detection_rate,
+            'impact_score': result.impact_score,
+            'duration': result.duration_seconds,
+            'techniques': techniques,
+            'techniques_successful': len(result.successful_techniques),
+            'techniques_failed': len(result.failed_techniques)
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/health')
+def health():
+    return jsonify({'status': 'healthy', 'version': '1.0'})
 
 if __name__ == '__main__':
+    print("""
+    ╔═══════════════════════════════════════════════════════════╗
+    ║     APT Emulation Platform - Web Interface                ║
+    ║                                                           ║
+    ║     🌐 Open http://localhost:5000 in your browser        ║
+    ║                                                           ║
+    ║     Press Ctrl+C to stop the server                      ║
+    ╚═══════════════════════════════════════════════════════════╝
+    """)
     app.run(debug=True, host='0.0.0.0', port=5000)
