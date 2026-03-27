@@ -1,32 +1,37 @@
-# 🎯 APT Emulation Platform
+
+#  APT Emulation Platform
 
 [![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)](https://python.org)
-[![MITRE ATT&CK](https://img.shields.io/badge/MITRE%20ATT%CK-50%2B%20techniques-red)](https://attack.mitre.org)
+[![MITRE ATT&CK](https://img.shields.io/badge/MITRE%20ATT%26CK-50%2B%20techniques-red)](https://attack.mitre.org)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Flask](https://img.shields.io/badge/Flask-2.2.5-blue)](https://flask.palletsprojects.com)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![GitHub Stars](https://img.shields.io/github/stars/kakashi-kx/apt-emulation-platform?style=social)](https://github.com/kakashi-kx/apt-emulation-platform)
 
-## 🚀 What Makes This Revolutionary
+## What Makes This Revolutionary
 
 Most security tools just scan for vulnerabilities. This platform **emulates real APT attacks** to show organizations exactly how they would be breached and how much it would cost.
 
-### Real Results from TechCorp Assessment:
-┌─────────────────────────────────────────────────────────┐
-│ ATTACK SUCCESS RATE: 100.0% │
-│ DETECTION RATE: 27.3% │
-│ BUSINESS IMPACT: $25-50M │
-│ TIME TO COMPROMISE: 4.2 hours │
-└─────────────────────────────────────────────────────────┘
-
-text
-
-## 🎯 Features
-
+**Key Features:**
 - ✅ **Complete APT Emulation** - APT29, Lazarus, ransomware
 - ✅ **50+ MITRE ATT&CK Techniques** - Full attack sequences
+- ✅ **Web Interface** - Beautiful Flask dashboard
 - ✅ **Business Impact Analysis** - Quantify risk in dollars
 - ✅ **Actionable Remediation** - Priority-ordered fixes
-- ✅ **ROI Calculation** - Justify security spending
+- ✅ **One-Click Campaigns** - Run attacks with a button
 
-## 📊 Supported APT Groups
+## 📊 Real Results from TechCorp Assessment
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  ATTACK SUCCESS RATE:    63.6%                         │
+│  DETECTION RATE:         18.2%                         │
+│  BUSINESS IMPACT:        $25-50M                       │
+│  TIME TO COMPROMISE:     4.2 hours                     │
+└─────────────────────────────────────────────────────────┘
+```
+
+##  Supported APT Groups
 
 | APT Group | Description | Techniques | Risk Level |
 |-----------|-------------|------------|------------|
@@ -34,7 +39,7 @@ text
 | **Lazarus** | North Korean state-sponsored | 7 | HIGH |
 | **Ransomware** | Modern ransomware operators | 7 | CRITICAL |
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - Python 3.9+
@@ -44,7 +49,7 @@ text
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/apt-emulation-platform.git
+git clone https://github.com/kakashi-kx/apt-emulation-platform.git
 cd apt-emulation-platform
 
 # Create virtual environment
@@ -54,108 +59,155 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Run a quick test
-python3 tests/test_simple.py
-Running Assessments
-bash
-# Run APT29 assessment
-python3 main.py --apt-group apt29 --safe-mode
-
-# Run all APT groups
-python3 main.py --apt-group all --safe-mode
-
-# Run real-world TechCorp assessment
-python3 real_test_techcorp.py
-
-# Generate action plan
-python3 generate_action_plan.py
-
+# Run the web interface
+python3 web/app.py
 ```
-📊 Sample Output
 
-🔴 CRITICAL FINDINGS:
-   1. Spearphishing succeeded - No email filtering
-   2. LSASS dump succeeded - No EDR protection
-   3. Data exfiltration undetected - No DLP monitoring
+### Open in Browser
+```
+http://localhost:5000
+```
 
-💥 BUSINESS IMPACT:
-   Potential loss: $25-50M
-   Regulatory fines: $15M
-   Customer records: 500,000
+##  Web Interface Features
 
-💡 RECOMMENDATIONS:
-   🚨 Deploy EDR immediately
-   🚨 Enable MFA for all admins
-   🚨 Implement email filtering
-   
-💰 ROI: 5000% if breach prevented
+- **Modern Dashboard** - Clean, professional UI
+- **One-Click Campaigns** - Run APT attacks with a single click
+- **Real-Time Results** - Watch techniques execute live
+- **Detection Tracking** - See which techniques were detected
+- **Business Impact** - Quantified risk in dollars
+
+##  Customizing for Your Environment
+
+### Step 1: Copy the Configuration Template
+```bash
+cp user_config.yaml.example user_config.yaml
+```
+
+### Step 2: Edit with Your Details
+```yaml
+company:
+  name: "Your Company"
+  domain: "yourcompany.com"
+
+email:
+  server: "smtp.yourcompany.com"
+  test_recipient: "security@yourcompany.com"
+
+edr:
+  vendor: "crowdstrike"  # or sentinelone, defender
+
+network:
+  domain: "yourcompany.local"
+```
+
+### Step 3: Run with Your Configuration
+```bash
+python3 main.py --config user_config.yaml --apt-group apt29
+```
 
 ## 📁 Project Structure
 
+```
 apt-emulation-platform/
-├── core/                  # Core emulation engine
-│   ├── base_emulator.py   # Base classes for emulation
-│   └── exceptions.py      # Custom exceptions
+├── web/                    # Web interface
+│   ├── app.py             # Flask application
+│   └── templates/
+│       └── index.html     # Main dashboard
 ├── apt_profiles/          # APT group definitions
 │   ├── apt29.py          # APT29 (Cozy Bear)
 │   ├── lazarus.py        # Lazarus Group
 │   └── ransomware.py     # Ransomware operators
+├── core/                  # Core emulation engine
 ├── emulation_engine/      # Campaign management
-│   └── campaign_manager.py
 ├── reporting/             # Report generation
-│   └── report_generator.py
-├── tests/                 # Test suite
-│   ├── test_simple.py
-│   └── test_apt.py
-├── main.py               # Main CLI interface
-├── real_test_techcorp.py # Real-world assessment
-├── generate_action_plan.py # Remediation planner
+├── utils/                 # Utilities
+├── main.py               # CLI interface
+├── user_config.yaml.example  # Configuration template
 └── requirements.txt      # Dependencies
-📈 Real-World Impact
-TechCorp Financial Services Assessment
-Before Remediation:
+```
 
-Attack success rate: 100%
+## 📊 Sample Output
 
-Detection rate: 27%
+```bash
+$ python3 main.py --apt-group apt29 --safe-mode
 
-Time to compromise: 4.2 hours
+============================================================
+APT EMULATION PLATFORM - STARTING
+============================================================
 
-Estimated loss: $25-50M
+ ARGUMENTS:
+   APT Group: apt29
+   Safe Mode: True
 
-After Remediation (90 days):
+ Loading Campaign Manager...
+✅ Loaded APT29 emulator
+✅ Loaded Lazarus emulator
+✅ Loaded Ransomware emulator
 
-Attack success rate: 15%
+ Available APT Groups: ['apt29', 'lazarus', 'ransomware']
 
-Detection rate: 80%
+ Running apt29 campaign...
 
-Response time: 15 minutes
+[1/11] Executing Spearphishing Test...
+  ✅ Success! Detected: False
 
-Investment: $500,000
+[2/11] Executing PowerShell Execution...
+  ✅ Success! Detected: True
 
-ROI: 5,000-10,000%
+... (continues)
 
-🛠️ Tech Stack
-Python 3.9+ - Core framework
+============================================================
+📊 RESULTS SUMMARY
+============================================================
 
-MITRE ATT&CK - TTP implementation
+🎯 APT29 (Cozy Bear)
+   Success Rate: 63.6%
+   Detection Rate: 18.2%
+   Impact Score: 10.0/10
 
-YAML - Configuration management
+============================================================
+✅ COMPLETE!
+============================================================
+```
 
-JSON - Reporting format
+## 🛠️ Tech Stack
 
-🤝 Contributing
+| Category | Technologies |
+|----------|--------------|
+| **Backend** | Python, Flask |
+| **Security** | MITRE ATT&CK Framework |
+| **Frontend** | HTML5, CSS3, JavaScript |
+| **Data** | JSON, YAML |
+| **Testing** | pytest |
+
+## 🤝 Contributing
+
 Contributions are welcome! Please open an issue or submit a PR.
 
-📄 License
-MIT License - See LICENSE file
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing`)
+5. Open a Pull Request
 
-⚠️ Disclaimer
-This tool is for security testing and educational purposes only. Only use against systems you own or have explicit permission to test.
+## 📄 License
 
-📞 Contact
-GitHub Issues: -----
+MIT License - See [LICENSE](LICENSE) file for details
 
-LinkedIn: -------
+## ⚠️ Disclaimer
 
-⭐ Star this repo if you found it useful!
+This tool is for **security testing and educational purposes only**. Only use against systems you own or have explicit permission to test. The author is not responsible for any misuse or damage caused by this tool.
+
+## 📞 Contact
+
+- **GitHub**: [@kakashi-kx](https://github.com/kakashi-kx)
+- **LinkedIn**: [abhixjith](https://www.linkedin.com/in/abhixjith)
+- **Project Issues**: [GitHub Issues](https://github.com/kakashi-kx/apt-emulation-platform/issues)
+
+---
+
+**⭐ Star this repo if you found it useful!**
+
+*Created with ❤️ by kakashi-kx | Security Researcher*
+
+
