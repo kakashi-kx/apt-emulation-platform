@@ -423,6 +423,13 @@
             </div>
             <div id="statusMessage" class="status"></div>
             <div id="techniqueList" class="technique-list"></div>
+            
+            <!-- Download Report Button -->
+            <div id="downloadSection" style="text-align: center; margin-top: 20px; display: none;">
+                <button onclick="downloadReport()" style="background: #2ea043; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 14px;">
+                    📥 Download Report (JSON)
+                </button>
+            </div>
         </div>
         
         <!-- Footer with Glowing Badges -->
@@ -474,10 +481,12 @@
             const resultsSection = document.getElementById('resultsSection');
             const statusDiv = document.getElementById('statusMessage');
             const techniqueList = document.getElementById('techniqueList');
+            const downloadSection = document.getElementById('downloadSection');
             
             runBtn.disabled = true;
             runBtn.innerHTML = '⏳ Running Assessment...';
             resultsSection.style.display = 'block';
+            downloadSection.style.display = 'none';
             statusDiv.className = 'status running';
             statusDiv.innerHTML = '🏃 Running APT campaign... This may take a few moments.';
             techniqueList.innerHTML = '';
@@ -519,6 +528,9 @@
                             `;
                         });
                     }
+                    
+                    // Show download button
+                    downloadSection.style.display = 'block';
                 }
             } catch (error) {
                 statusDiv.className = 'status error';
@@ -527,6 +539,48 @@
                 runBtn.disabled = false;
                 runBtn.innerHTML = '▶ Run Assessment';
             }
+        }
+        
+        // Download Report Function
+        function downloadReport() {
+            const successRate = document.getElementById('successRate').innerText;
+            const detectionRate = document.getElementById('detectionRate').innerText;
+            const impactScore = document.getElementById('impactScore').innerText;
+            const aptGroup = document.getElementById('aptGroup').value;
+            
+            const report = {
+                timestamp: new Date().toISOString(),
+                apt_group: aptGroup,
+                results: {
+                    success_rate: parseFloat(successRate) / 100,
+                    detection_rate: parseFloat(detectionRate) / 100,
+                    impact_score: parseFloat(impactScore)
+                },
+                techniques: []
+            };
+            
+            const techniqueItems = document.querySelectorAll('.technique-item');
+            techniqueItems.forEach(item => {
+                const text = item.innerText;
+                const success = item.classList.contains('success');
+                const detected = text.includes('🛡️');
+                let name = text.split('(')[0].replace(/[✅❌]/g, '').trim();
+                report.techniques.push({
+                    name: name,
+                    success: success,
+                    detected: detected
+                });
+            });
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `apt_report_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
     </script>
 </body>
