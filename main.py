@@ -52,6 +52,9 @@ def main():
         result = manager.run_campaign(args.apt_group)
         results = [result]
     
+    # SAVE RESULTS TO JSON FILE
+    manager.save_results("campaign_results.json")
+    
     print("\n" + "="*60)
     print("📊 RESULTS SUMMARY")
     print("="*60)
@@ -63,7 +66,7 @@ def main():
         print(f"   Impact Score: {result.impact_score:.1f}/10")
     
     print("\n" + "="*60)
-    print("✅ COMPLETE!")
+    print("✅ COMPLETE! Report saved to campaign_results.json")
     print("="*60)
 
 if __name__ == "__main__":
