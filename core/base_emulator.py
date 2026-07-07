@@ -4,7 +4,7 @@ Enterprise-grade APT emulation with proper architecture
 """
 
 from abc import ABC, abstractmethod
-from typing import Dict, List, Optional, Any, Callable
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -14,8 +14,7 @@ import subprocess
 import random
 import hashlib
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import yaml
+from concurrent.futures import ThreadPoolExecutor
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -70,7 +69,6 @@ class Technique:
     references: List[str] = field(default_factory=list)
     sigma_rules: List[str] = field(default_factory=list)
     
-    # Advanced fields
     execution_timeout: int = 30
     retry_count: int = 1
     requires_privilege: bool = False
@@ -122,7 +120,6 @@ class TechniqueExecutor:
         """Execute a technique with proper isolation"""
         start_time = time.time()
         
-        # Check mode
         if self.mode == ExecutionMode.SAFE:
             return self._safe_execute(technique)
         elif self.mode == ExecutionMode.DRY_RUN:
@@ -133,7 +130,6 @@ class TechniqueExecutor:
             return self._real_execute(technique, environment)
     
     def _safe_execute(self, technique: Technique) -> TechniqueResult:
-        """Execute in safe mode - no actual commands run"""
         return TechniqueResult(
             technique_id=technique.id,
             technique_name=technique.name,
@@ -145,7 +141,6 @@ class TechniqueExecutor:
         )
     
     def _dry_run_execute(self, technique: Technique) -> TechniqueResult:
-        """Execute in dry-run mode - show what would happen"""
         return TechniqueResult(
             technique_id=technique.id,
             technique_name=technique.name,
@@ -157,7 +152,6 @@ class TechniqueExecutor:
         )
     
     def _simulate_execute(self, technique: Technique) -> TechniqueResult:
-        """Execute in simulation mode - random results"""
         import random
         success = random.random() < technique.success_rate
         detected = random.random() < technique.detection_risk
@@ -180,9 +174,7 @@ class TechniqueExecutor:
         )
     
     def _real_execute(self, technique: Technique, environment: Dict[str, Any]) -> TechniqueResult:
-        """Execute in real mode - actual command execution"""
         try:
-            # Execute with timeout
             result = subprocess.run(
                 technique.command,
                 shell=True,
@@ -267,7 +259,6 @@ class CampaignResult:
         }, indent=2)
     
     def to_mitre_navigator(self) -> Dict[str, Any]:
-        """Export to MITRE ATT&CK Navigator format"""
         return {
             'name': f"APT Emulation - {self.campaign_name}",
             'version': '3.0',
@@ -296,37 +287,30 @@ class AdversaryEmulator(ABC):
     
     @abstractmethod
     def get_technique_sequence(self) -> List[Technique]:
-        """Get ordered list of techniques"""
         pass
     
     @abstractmethod
     def validate_environment(self) -> bool:
-        """Validate the target environment"""
-        pass
+        return True
     
     @abstractmethod
     def get_required_permissions(self) -> List[str]:
-        """Get permissions required for this campaign"""
-        pass
+        return []
     
     def run_campaign(self) -> CampaignResult:
-        """Execute the full campaign with proper orchestration"""
         start_time = datetime.now()
         
         if not self.validate_environment():
-            logger.error("Environment validation failed")
             raise RuntimeError("Environment validation failed")
         
         self.techniques = self.get_technique_sequence()
         logger.info(f"Starting {self.name} campaign with {len(self.techniques)} techniques")
         
-        # Execute techniques with progress tracking
         for i, technique in enumerate(self.techniques, 1):
             logger.info(f"[{i}/{len(self.techniques)}] Executing {technique.name}")
             result = self.executor.execute(technique, self.config)
             self.results.append(result)
             
-            # Log result
             status_emoji = {
                 TechniqueStatus.SUCCESS: "✅",
                 TechniqueStatus.FAILED: "❌",
@@ -337,7 +321,6 @@ class AdversaryEmulator(ABC):
         
         end_time = datetime.now()
         
-        # Calculate metrics
         total = len(self.results)
         successful = sum(1 for r in self.results if r.status == TechniqueStatus.SUCCESS)
         failed = total - successful
@@ -362,7 +345,6 @@ class AdversaryEmulator(ABC):
         )
     
     def _identify_detection_gaps(self) -> List[Dict[str, Any]]:
-        """Identify detection gaps from results"""
         gaps = []
         for result in self.results:
             if result.status == TechniqueStatus.SUCCESS and not result.detected:
@@ -375,10 +357,7 @@ class AdversaryEmulator(ABC):
         return gaps
     
     def _generate_recommendations(self) -> List[Dict[str, Any]]:
-        """Generate recommendations based on results"""
         recommendations = []
-        
-        # Detection gaps
         if self.detection_gaps:
             recommendations.append({
                 'priority': 'HIGH',
@@ -386,7 +365,6 @@ class AdversaryEmulator(ABC):
                 'techniques': [g['technique'] for g in self.detection_gaps[:3]]
             })
         
-        # Low detection rate
         detection_rate = len([r for r in self.results if r.detected]) / len(self.results) if self.results else 0
         if detection_rate < 0.3:
             recommendations.append({
@@ -396,3 +374,7 @@ class AdversaryEmulator(ABC):
             })
         
         return recommendations
+
+
+# ✅ FIX: Alias for backward compatibility
+EngagementResult = CampaignResult
