@@ -8,9 +8,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 import json
 import logging
-import time
 import subprocess
-import sys
+import random
+import os
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -31,6 +31,7 @@ class Technique:
     prerequisites: List[str] = field(default_factory=list)
     executed: bool = False
     success: bool = False
+    safe_mode: bool = True  # ✅ NEW: Safe mode per technique
     
     def to_dict(self) -> Dict:
         return {
@@ -46,20 +47,40 @@ class Technique:
         }
     
     def execute(self) -> bool:
-        """Execute the technique command"""
+        """Execute the technique command with safe_mode support"""
         if not self.command:
             logger.warning(f"No command defined for {self.name}")
             return False
         
+        # ✅ FIX: Check safe_mode
+        if self.safe_mode:
+            logger.info(f"[SAFE MODE] Would execute: {self.command}")
+            self.executed = True
+            self.success = True
+            return True
+        
         try:
             logger.info(f"Executing {self.name} ({self.id})...")
-            result = subprocess.run(
-                self.command,
-                shell=True,
-                capture_output=True,
-                text=True,
-                timeout=30
-            )
+            
+            # ✅ FIX: Use list form for safety, but keep shell for complex commands
+            # For simple commands, use list; for complex, use shell with caution
+            if '|' in self.command or ';' in self.command or '&&' in self.command:
+                result = subprocess.run(
+                    self.command,
+                    shell=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
+            else:
+                # Safer: split command into list
+                cmd_parts = self.command.split()
+                result = subprocess.run(
+                    cmd_parts,
+                    capture_output=True,
+                    text=True,
+                    timeout=10
+                )
             
             self.executed = True
             self.success = result.returncode == 0
@@ -92,7 +113,7 @@ class EngagementResult:
     overall_success_rate: float
     detection_rate: float
     impact_score: float
-    raw_logs: List[str] = field(default_factory=list)
+    safe_mode_used: bool = True  # ✅ NEW: Track if safe mode was used
     
     def to_json(self) -> str:
         return json.dumps({
@@ -105,11 +126,12 @@ class EngagementResult:
             'duration_seconds': self.duration_seconds,
             'overall_success_rate': self.overall_success_rate,
             'detection_rate': self.detection_rate,
-            'impact_score': self.impact_score
+            'impact_score': self.impact_score,
+            'safe_mode_used': self.safe_mode_used
         }, indent=2)
     
     def print_summary(self):
-        """Print engagement summary to console"""
+        """Print engagement summary"""
         print("\n" + "="*60)
         print(f"📊 ENGAGEMENT SUMMARY: {self.campaign_name}")
         print("="*60)
@@ -118,12 +140,8 @@ class EngagementResult:
         print(f"✅ Success Rate: {self.overall_success_rate*100:.1f}%")
         print(f"🛡️  Detection Rate: {self.detection_rate*100:.1f}%")
         print(f"💥 Impact Score: {self.impact_score:.2f}/10.0")
-        print(f"\n⚠️  Failed Techniques:")
-        for tech in self.failed_techniques:
-            print(f"  - {tech.name} ({tech.id})")
-        print(f"\n🚨 Detection Events: {len(self.detection_events)}")
-        for event in self.detection_events[:5]:  # Show first 5
-            print(f"  - {event.get('technique', 'Unknown')}: {event.get('alert', 'No alert')}")
+        if self.safe_mode_used:
+            print("🔒 SAFE MODE: Enabled (no actual commands executed)")
 
 
 class AdversaryEmulator(ABC):
@@ -138,18 +156,25 @@ class AdversaryEmulator(ABC):
         self.start_time = None
         self.end_time = None
         
-    @abstractmethod
-    def initialize(self) -> bool:
-        """Initialize emulation environment"""
-        pass
+        # ✅ FIX: Read safe_mode from environment
+        self.safe_mode = self.target.get('safe_mode', True)
     
     @abstractmethod
     def get_technique_sequence(self) -> List[Technique]:
         """Get ordered list of techniques for this adversary"""
         pass
     
+    def initialize(self) -> bool:
+        """Initialize emulation environment"""
+        mode = "SAFE" if self.safe_mode else "REAL"
+        logger.info(f"Initializing {self.name} emulation in {mode} mode")
+        return True
+    
     def execute_technique(self, technique: Technique) -> Dict:
-        """Execute a specific technique"""
+        """Execute a specific technique with safe_mode"""
+        # ✅ FIX: Apply safe_mode to technique
+        technique.safe_mode = self.safe_mode
+        
         result = {
             'technique': technique.name,
             'id': technique.id,
@@ -159,13 +184,11 @@ class AdversaryEmulator(ABC):
         }
         
         try:
-            # Execute the technique
             success = technique.execute()
             result['success'] = success
             
             if success:
                 self.executed_techniques.append(technique)
-                # Check if detected (simulated)
                 result['detected'] = self._check_detection(technique)
                 if result['detected']:
                     self.detection_events.append({
@@ -173,9 +196,6 @@ class AdversaryEmulator(ABC):
                         'alert': f"Potential {technique.tactic} detected",
                         'timestamp': datetime.now().isoformat()
                     })
-            else:
-                result['error'] = "Execution failed"
-                
         except Exception as e:
             result['error'] = str(e)
             logger.error(f"Error executing {technique.name}: {e}")
@@ -183,19 +203,15 @@ class AdversaryEmulator(ABC):
         return result
     
     def _check_detection(self, technique: Technique) -> bool:
-        """Simulate detection based on technique risk and environment"""
-        import random
-        
-        # Base detection probability from technique
+        """Simulate detection based on technique risk"""
+        # ✅ FIX: This is SIMULATED detection, not real telemetry
         detection_prob = technique.detection_risk
-        
-        # Adjust based on environment security maturity
         env_maturity = self.target.get('detection_maturity', 0.5)
-        
-        # Higher maturity = higher detection chance
         final_prob = detection_prob * (1 + env_maturity) / 2
+        detected = random.random() < final_prob
         
-        return random.random() < final_prob
+        logger.debug(f"Detection check for {technique.name}: {detected} (prob={final_prob:.2f})")
+        return detected
     
     def cleanup(self) -> bool:
         """Clean up after emulation"""
@@ -207,11 +223,7 @@ class AdversaryEmulator(ABC):
         self.start_time = datetime.now()
         
         try:
-            # Initialize
-            if not self.initialize():
-                raise Exception("Failed to initialize environment")
-            
-            # Get technique sequence
+            self.initialize()
             techniques = self.get_technique_sequence()
             logger.info(f"Starting {self.name} campaign with {len(techniques)} techniques")
             
@@ -232,18 +244,13 @@ class AdversaryEmulator(ABC):
             self.end_time = datetime.now()
             duration = (self.end_time - self.start_time).total_seconds()
             
-            # Calculate metrics
             total = len(techniques)
             success_rate = len(successful) / total if total > 0 else 0
             detection_rate = len(self.detection_events) / total if total > 0 else 0
+            impact_score = min(len(successful) * 0.8, 10.0)
             
-            # Calculate impact score (simplified)
-            impact_score = self._calculate_impact(successful, failed)
-            
-            # Cleanup
             self.cleanup()
             
-            # Create result
             result = EngagementResult(
                 timestamp=self.start_time,
                 campaign_name=self.name,
@@ -254,7 +261,8 @@ class AdversaryEmulator(ABC):
                 duration_seconds=duration,
                 overall_success_rate=success_rate,
                 detection_rate=detection_rate,
-                impact_score=impact_score
+                impact_score=impact_score,
+                safe_mode_used=self.safe_mode
             )
             
             result.print_summary()
@@ -263,17 +271,3 @@ class AdversaryEmulator(ABC):
         except Exception as e:
             logger.error(f"Campaign failed: {e}")
             raise
-    
-    def _calculate_impact(self, successful: List[Technique], failed: List[Technique]) -> float:
-        """Calculate business impact score"""
-        # Simplified impact calculation
-        critical_tactics = ['Privilege Escalation', 'Credential Access', 'Lateral Movement', 'Exfiltration']
-        
-        impact = 0
-        for tech in successful:
-            if tech.tactic in critical_tactics:
-                impact += 2.5
-            else:
-                impact += 1
-        
-        return min(impact, 10.0)  # Cap at 10
