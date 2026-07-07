@@ -12,7 +12,7 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from core.base_emulator import AdversaryEmulator, EngagementResult
+from core.base_emulator import AdversaryEmulator, CampaignResult
 
 logger = logging.getLogger(__name__)
 
