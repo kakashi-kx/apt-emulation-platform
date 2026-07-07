@@ -1,5 +1,8 @@
-# Web Dependencies - Minimal working versions
-Flask==2.2.5
-Flask-CORS==4.0.0
+# Web Dependencies - Production ready
+Flask==2.3.3
+Flask-CORS==4.0.1
+Flask-Limiter==3.5.0
+waitress==2.1.2
+python-dotenv==1.0.0
 pyyaml==6.0.1
 colorama==0.4.6
