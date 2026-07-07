@@ -108,28 +108,28 @@ def run_campaign():
         
         result = manager.run_campaign(apt_group)
         
-        # Format response
+        # ✅ FIX: Use CampaignResult attributes correctly
         techniques = []
-        for tech in result.techniques_executed:
+        for tech_result in result.technique_results:
             techniques.append({
-                'id': tech.id,
-                'name': tech.name,
-                'tactic': tech.tactic,
-                'success': tech in result.successful_techniques,
-                'detected': any(e.get('technique') == tech.name for e in result.detection_events)
+                'id': tech_result.technique_id,
+                'name': tech_result.technique_name,
+                'tactic': tech_result.tactic,
+                'success': tech_result.status.value == 'success',
+                'detected': tech_result.detected
             })
         
         response = {
             'success': True,
-            'campaign_id': getattr(result, 'campaign_id', 'unknown'),
-            'success_rate': result.overall_success_rate,
+            'campaign_id': result.campaign_id,
+            'success_rate': result.success_rate,
             'detection_rate': result.detection_rate,
             'impact_score': result.impact_score,
-            'duration': result.duration_seconds,
+            'duration': (result.end_time - result.start_time).total_seconds(),
             'techniques': techniques,
-            'techniques_successful': len(result.successful_techniques),
-            'techniques_failed': len(result.failed_techniques),
-            'safe_mode_used': getattr(result, 'safe_mode_used', True)
+            'techniques_successful': result.successful,
+            'techniques_failed': result.failed,
+            'safe_mode_used': result.execution_mode.value == 'safe'
         }
         
         logger.info(f"Campaign {apt_group} completed: {response['success_rate']:.1%} success")
