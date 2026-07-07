@@ -1,40 +1,114 @@
 #!/usr/bin/env python3
 """
-APT Emulation Platform - Simple Web Interface
+APT Emulation Platform - Advanced Web Interface
+Enterprise-grade Flask application with proper security
 """
 
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, send_file
+from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import os
 import sys
+import json
+import uuid
+from datetime import datetime
 from pathlib import Path
+from typing import Dict, Any
+import logging
+from logging.handlers import RotatingFileHandler
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# File handler for production logs
+if not os.path.exists('logs'):
+    os.makedirs('logs')
+file_handler = RotatingFileHandler('logs/web.log', maxBytes=10000000, backupCount=3)
+file_handler.setFormatter(logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+))
+logger.addHandler(file_handler)
+
+# Initialize Flask with security settings
 app = Flask(__name__)
+
+# Security: Use environment variable for secret key
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(24).hex())
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
+# CORS - allow only specific origins in production
+allowed_origins = os.environ.get('ALLOWED_ORIGINS', '*').split(',')
+CORS(app, origins=allowed_origins)
+
+# Rate limiting
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["100 per hour", "10 per minute"],
+    storage_uri="memory://"
+)
+
+# Request tracking
+request_id_header = 'X-Request-ID'
+
+@app.before_request
+def before_request():
+    request.request_id = request.headers.get(request_id_header, str(uuid.uuid4()))
+
+@app.after_request
+def after_request(response):
+    response.headers['X-Request-ID'] = getattr(request, 'request_id', 'unknown')
+    return response
+
+# ----------------------------------------------------------------------------
+# Routes
+# ----------------------------------------------------------------------------
 
 @app.route('/')
 def index():
+    """Serve the main dashboard"""
     return render_template('index.html')
 
 @app.route('/api/run', methods=['POST'])
+@limiter.limit("5 per minute")
 def run_campaign():
-    """Run an APT campaign"""
-    data = request.json
-    apt_group = data.get('apt_group', 'apt29')
-    detection_maturity = data.get('detection_maturity', 0.5)
-    safe_mode = data.get('safe_mode', True)
-    
+    """Execute an APT campaign with proper validation"""
     try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Invalid request body'}), 400
+        
+        apt_group = data.get('apt_group', 'apt29')
+        detection_maturity = data.get('detection_maturity', 0.5)
+        safe_mode = data.get('safe_mode', True)
+        
+        # Validate inputs
+        valid_groups = ['apt29', 'lazarus', 'ransomware']
+        if apt_group not in valid_groups:
+            return jsonify({'error': f'Invalid APT group: {apt_group}'}), 400
+        
+        if not 0 <= detection_maturity <= 1:
+            return jsonify({'error': 'Detection maturity must be between 0 and 1'}), 400
+        
+        # Import and run
         from emulation_engine.campaign_manager import CampaignManager
         
         manager = CampaignManager({
             'name': 'web_assessment',
             'detection_maturity': detection_maturity,
-            'safe_mode': safe_mode
+            'safe_mode': safe_mode,
+            'request_id': getattr(request, 'request_id', 'unknown')
         })
         
         result = manager.run_campaign(apt_group)
         
-        # Format techniques for display
+        # Format response
         techniques = []
         for tech in result.techniques_executed:
             techniques.append({
@@ -45,33 +119,91 @@ def run_campaign():
                 'detected': any(e.get('technique') == tech.name for e in result.detection_events)
             })
         
-        return jsonify({
+        response = {
             'success': True,
+            'campaign_id': getattr(result, 'campaign_id', 'unknown'),
             'success_rate': result.overall_success_rate,
             'detection_rate': result.detection_rate,
             'impact_score': result.impact_score,
             'duration': result.duration_seconds,
             'techniques': techniques,
             'techniques_successful': len(result.successful_techniques),
-            'techniques_failed': len(result.failed_techniques)
-        })
+            'techniques_failed': len(result.failed_techniques),
+            'safe_mode_used': getattr(result, 'safe_mode_used', True)
+        }
+        
+        logger.info(f"Campaign {apt_group} completed: {response['success_rate']:.1%} success")
+        return jsonify(response)
         
     except Exception as e:
+        logger.error(f"Campaign failed: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/health')
 def health():
-    return jsonify({'status': 'healthy', 'version': '1.0'})
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'version': '1.0.1',
+        'timestamp': datetime.now().isoformat()
+    })
+
+@app.route('/api/export/mitre', methods=['GET'])
+def export_mitre_navigator():
+    """Export results as MITRE ATT&CK Navigator layer"""
+    try:
+        # Get latest results from campaign_manager
+        # This would need to be implemented
+        return jsonify({'error': 'Not implemented yet'}), 501
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# ----------------------------------------------------------------------------
+# Error handlers
+# ----------------------------------------------------------------------------
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'error': 'Not found'}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    logger.error(f"Internal error: {error}")
+    return jsonify({'error': 'Internal server error'}), 500
+
+@app.errorhandler(429)
+def rate_limit_error(error):
+    return jsonify({'error': 'Rate limit exceeded. Please try again later.'}), 429
+
+# ----------------------------------------------------------------------------
+# Main entry point
+# ----------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    print()
-    print("\033[95m" + "=" * 60 + "\033[0m")
-    print("\033[96m    APT Emulation Platform - Web Interface\033[0m")
-    print("\033[95m" + "=" * 60 + "\033[0m")
-    print()
-    print("   \033[92m \033[0m Open \033[94mhttp://localhost:5000\033[0m in your browser")
-    print()
-    print("   \033[93m \033[0m Press Ctrl+C to stop the server")
-    print()
-    print("\033[95m" + "=" * 60 + "\033[0m")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Production-ready configuration
+    debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    port = int(os.environ.get('PORT', 5000))
+    host = os.environ.get('HOST', '0.0.0.0')
+    
+    print("""
+    ╔══════════════════════════════════════════════════════════════╗
+    ║     APT Emulation Platform - Enterprise Web Interface        ║
+    ║                         v1.0.1                              ║
+    ╠══════════════════════════════════════════════════════════════╣
+    ║  🌐  http://{}:{}                                          ║
+    ║  🔒  Debug: {}                                              ║
+    ║  📋  Logs: ./logs/web.log                                  ║
+    ║  ⏱️   Press Ctrl+C to stop                                 ║
+    ╚══════════════════════════════════════════════════════════════╝
+    """.format(host, port, "ON" if debug_mode else "OFF"))
+    
+    # Use Waitress for production, Flask dev server for development
+    if debug_mode:
+        app.run(debug=True, host=host, port=port)
+    else:
+        try:
+            from waitress import serve
+            serve(app, host=host, port=port, threads=4)
+        except ImportError:
+            logger.warning("Waitress not installed. Using Flask dev server.")
+            app.run(debug=False, host=host, port=port)
