@@ -60,10 +60,15 @@ def main():
     print("="*60)
     
     for result in results:
+        # ✅ FIX: Use correct CampaignResult attributes
         print(f"\n🎯 {result.campaign_name}")
-        print(f"   Success Rate: {result.overall_success_rate*100:.1f}%")
+        print(f"   Success Rate: {result.success_rate*100:.1f}%")
         print(f"   Detection Rate: {result.detection_rate*100:.1f}%")
         print(f"   Impact Score: {result.impact_score:.1f}/10")
+        print(f"   Total Techniques: {result.total_techniques}")
+        print(f"   ✅ Successful: {result.successful}")
+        print(f"   ❌ Failed: {result.failed}")
+        print(f"   🛡️ Detected: {result.detected}")
     
     print("\n" + "="*60)
     print("✅ COMPLETE! Report saved to campaign_results.json")
