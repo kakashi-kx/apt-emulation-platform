@@ -17,7 +17,7 @@ source venv/bin/activate
 # Install dependencies
 echo "📦 Installing dependencies..."
 pip install -r requirements.txt
-pip install -r web/requirements-web.txt 2>/dev/null || true
+pip install -r requirements-web.txt 2>/dev/null || true
 
 # Create required directories
 mkdir -p logs reports
