@@ -9,9 +9,9 @@ import logging
 import sys
 from pathlib import Path
 
-# Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# ✅ FIX: Use CampaignResult instead of EngagementResult
 from core.base_emulator import AdversaryEmulator, CampaignResult
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,6 @@ class CampaignManager:
         self.results = []
         self.emulators = {}
         
-        # Dynamically import APT profiles
         self._load_emulators()
     
     def _load_emulators(self):
@@ -53,33 +52,24 @@ class CampaignManager:
             logger.warning(f"Could not load Ransomware: {e}")
     
     def list_available_apt_groups(self) -> List[str]:
-        """List all available APT groups"""
         return list(self.emulators.keys())
     
-    def run_campaign(self, apt_group: str) -> EngagementResult:
-        """Run a single campaign for specified APT group"""
-        
+    def run_campaign(self, apt_group: str) -> CampaignResult:
         if apt_group not in self.emulators:
-            raise ValueError(f"Unknown APT group: {apt_group}. Available: {self.list_available_apt_groups()}")
+            raise ValueError(f"Unknown APT group: {apt_group}")
         
         logger.info(f"Starting {apt_group} campaign...")
         
-        # Create emulator instance
         emulator_class = self.emulators[apt_group]
         emulator = emulator_class(self.target_environment)
         
-        # Run campaign
         result = emulator.run_campaign()
-        
-        # Store result
         self.results.append(result)
         
         return result
     
-    def run_all_campaigns(self) -> List[EngagementResult]:
-        """Run all available APT campaigns"""
+    def run_all_campaigns(self) -> List[CampaignResult]:
         results = []
-        
         for apt_group in self.list_available_apt_groups():
             try:
                 logger.info(f"\n{'='*60}")
@@ -89,13 +79,10 @@ class CampaignManager:
                 results.append(result)
             except Exception as e:
                 logger.error(f"Failed to run {apt_group}: {e}")
-                import traceback
-                traceback.print_exc()
         
         return results
     
     def save_results(self, filename: str = "campaign_results.json"):
-        """Save all results to JSON file"""
         data = {
             'timestamp': datetime.now().isoformat(),
             'target_environment': self.target_environment,
