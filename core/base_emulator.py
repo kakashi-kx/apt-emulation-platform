@@ -284,6 +284,8 @@ class AdversaryEmulator(ABC):
         self.techniques: List[Technique] = []
         self.results: List[TechniqueResult] = []
         self.campaign_id = hashlib.md5(f"{name}_{time.time()}".encode()).hexdigest()[:8]
+        # ✅ FIX: Initialize detection_gaps
+        self.detection_gaps = []
     
     @abstractmethod
     def get_technique_sequence(self) -> List[Technique]:
@@ -326,6 +328,9 @@ class AdversaryEmulator(ABC):
         failed = total - successful
         detected = sum(1 for r in self.results if r.detected)
         
+        # ✅ FIX: Store detection gaps on self
+        self.detection_gaps = self._identify_detection_gaps()
+        
         return CampaignResult(
             campaign_id=self.campaign_id,
             campaign_name=self.name,
@@ -340,7 +345,7 @@ class AdversaryEmulator(ABC):
             impact_score=successful * 0.8,
             execution_mode=self.executor.mode,
             technique_results=self.results,
-            detection_gaps=self._identify_detection_gaps(),
+            detection_gaps=self.detection_gaps,
             recommendations=self._generate_recommendations()
         )
     
@@ -376,5 +381,5 @@ class AdversaryEmulator(ABC):
         return recommendations
 
 
-# ✅ FIX: Alias for backward compatibility
+# ✅ Alias for backward compatibility
 EngagementResult = CampaignResult
