@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Dict, Any
 import logging
 from logging.handlers import RotatingFileHandler
-import glob 
+import glob
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -109,7 +109,7 @@ def run_campaign():
         
         result = manager.run_campaign(apt_group)
         
-        # ✅ FIX: Use CampaignResult attributes correctly
+        # ✅ Use CampaignResult attributes correctly
         techniques = []
         for tech_result in result.technique_results:
             techniques.append({
@@ -140,9 +140,15 @@ def run_campaign():
         logger.error(f"Campaign failed: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
+# ----------------------------------------------------------------------------
+# ✅ ADVANCED MITRE ATT&CK NAVIGATOR EXPORT
+# ----------------------------------------------------------------------------
 @app.route('/api/export/mitre', methods=['GET'])
 def export_mitre_navigator():
-    """Export results as MITRE ATT&CK Navigator layer"""
+    """
+    Export results as MITRE ATT&CK Navigator layer
+    This is the standard format used by blue teams worldwide
+    """
     try:
         # Get the latest campaign results
         files = glob.glob('campaign_results.json')
@@ -152,7 +158,7 @@ def export_mitre_navigator():
         with open(files[-1], 'r') as f:
             data = json.load(f)
         
-        # Convert to MITRE Navigator format
+        # Build MITRE Navigator Layer
         navigator_layer = {
             "name": "APT Emulation Results",
             "version": "3.0",
@@ -164,7 +170,7 @@ def export_mitre_navigator():
         # Extract techniques from campaigns
         for campaign in data.get('campaigns', []):
             for tech in campaign.get('techniques_executed', []):
-                # Find if this technique was detected
+                # Check if this technique was detected
                 detected = False
                 for event in campaign.get('detection_events', []):
                     if event.get('technique') == tech.get('name'):
@@ -174,33 +180,37 @@ def export_mitre_navigator():
                 navigator_layer['techniques'].append({
                     "techniqueID": tech.get('id', 'T0000'),
                     "score": 100 if detected else 50,
-                    "comment": tech.get('name', 'Unknown')
+                    "comment": tech.get('name', 'Unknown'),
+                    "metadata": [
+                        {"name": "tactic", "value": tech.get('tactic', 'Unknown')},
+                        {"name": "detected", "value": str(detected)}
+                    ]
                 })
         
+        logger.info(f"MITRE Navigator export successful: {len(navigator_layer['techniques'])} techniques")
         return jsonify(navigator_layer)
         
     except Exception as e:
         logger.error(f"MITRE export failed: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
+# ----------------------------------------------------------------------------
+# ✅ HEALTH CHECK
+# ----------------------------------------------------------------------------
 @app.route('/api/health')
 def health():
     """Health check endpoint"""
     return jsonify({
         'status': 'healthy',
-        'version': '1.0.1',
-        'timestamp': datetime.now().isoformat()
+        'version': '1.0.2',
+        'timestamp': datetime.now().isoformat(),
+        'endpoints': [
+            '/',
+            '/api/run (POST)',
+            '/api/export/mitre (GET)',
+            '/api/health (GET)'
+        ]
     })
-
-@app.route('/api/export/mitre', methods=['GET'])
-def export_mitre_navigator():
-    """Export results as MITRE ATT&CK Navigator layer"""
-    try:
-        # Get latest results from campaign_manager
-        # This would need to be implemented
-        return jsonify({'error': 'Not implemented yet'}), 501
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 # ----------------------------------------------------------------------------
 # Error handlers
@@ -232,11 +242,12 @@ if __name__ == '__main__':
     print("""
     ╔══════════════════════════════════════════════════════════════╗
     ║     APT Emulation Platform - Enterprise Web Interface        ║
-    ║                         v1.0.1                              ║
+    ║                         v1.0.2                              ║
     ╠══════════════════════════════════════════════════════════════╣
     ║  🌐  http://{}:{}                                          ║
     ║  🔒  Debug: {}                                              ║
     ║  📋  Logs: ./logs/web.log                                  ║
+    ║  🎯  MITRE Export: /api/export/mitre                      ║
     ║  ⏱️   Press Ctrl+C to stop                                 ║
     ╚══════════════════════════════════════════════════════════════╝
     """.format(host, port, "ON" if debug_mode else "OFF"))
@@ -247,6 +258,7 @@ if __name__ == '__main__':
     else:
         try:
             from waitress import serve
+            logger.info("Starting Waitress production server...")
             serve(app, host=host, port=port, threads=4)
         except ImportError:
             logger.warning("Waitress not installed. Using Flask dev server.")
