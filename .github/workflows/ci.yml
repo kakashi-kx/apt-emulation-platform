@@ -22,4 +22,4 @@ jobs:
           pip install -r requirements-web.txt
           pip install pytest
       - name: Run tests
-        run: pytest tests/ -v || true
+        run: pytest tests/ -v
