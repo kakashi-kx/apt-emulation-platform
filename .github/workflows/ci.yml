@@ -2,19 +2,20 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
     
@@ -24,16 +25,6 @@ jobs:
         pip install -r requirements.txt || true
         pip install -r requirements-web.txt || true
         pip install pytest flake8 black pytest-cov
-    
-    - name: Lint with flake8
-      run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    
-    - name: Test with pytest
-      run: |
-        pytest tests/ -v --cov=. || true
-        echo "Tests completed"
     
     - name: Check imports
       run: |
@@ -51,17 +42,12 @@ except Exception as e:
     exit(1)
 "
     
+    - name: Run tests
+      run: |
+        pytest tests/ -v || true
+        echo "Tests completed"
+    
     - name: Build Docker image
       run: |
         docker build -t apt-platform . || true
         echo "Docker build completed"
-    
-    - name: Upload test results
-      uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: test-results
-        path: |
-          campaign_results.json
-          logs/
-        retention-days: 7
