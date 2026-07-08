@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  apt-platform:
+    build: .
+    container_name: apt-emulation-platform
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY:-dev-key-change-in-production}
+      - FLASK_DEBUG=${FLASK_DEBUG:-false}
+      - SAFE_MODE=${SAFE_MODE:-true}
+      - PORT=5000
+      - HOST=0.0.0.0
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-*}
+    volumes:
+      - ./campaign_results.json:/app/campaign_results.json
+      - ./logs:/app/logs
+      - ./reports:/app/reports
+      - ./user_config.yaml:/app/user_config.yaml  # Optional: mount custom config
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - apt-network
+
+networks:
+  apt-network:
+    driver: bridge
