@@ -240,37 +240,36 @@ class CampaignResult:
     recommendations: List[Dict[str, Any]] = field(default_factory=list)
     
     def to_json(self) -> str:
-    return json.dumps({
-        'campaign_id': self.campaign_id,
-        'campaign_name': self.campaign_name,
-        'start_time': self.start_time.isoformat(),
-        'end_time': self.end_time.isoformat(),
-        'duration_seconds': (self.end_time - self.start_time).total_seconds(),
-        'total_techniques': self.total_techniques,
-        'successful': self.successful,
-        'failed': self.failed,
-        'detected': self.detected,
-        'success_rate': self.success_rate,
-        'detection_rate': self.detection_rate,
-        'impact_score': self.impact_score,
-        'execution_mode': self.execution_mode.value,
-        # ✅ FIX P0-2: Add technique_results
-        'technique_results': [
-            {
-                'technique_id': r.technique_id,
-                'technique_name': r.technique_name,
-                'tactic': r.tactic,
-                'status': r.status.value,
-                'execution_time': r.execution_time,
-                'output': r.output,
-                'error': r.error,
-                'detected': r.detected,
-            }
-            for r in self.technique_results
-        ],
-        'detection_gaps': self.detection_gaps,
-        'recommendations': self.recommendations
-    }, indent=2)
+        return json.dumps({
+            'campaign_id': self.campaign_id,
+            'campaign_name': self.campaign_name,
+            'start_time': self.start_time.isoformat(),
+            'end_time': self.end_time.isoformat(),
+            'duration_seconds': (self.end_time - self.start_time).total_seconds(),
+            'total_techniques': self.total_techniques,
+            'successful': self.successful,
+            'failed': self.failed,
+            'detected': self.detected,
+            'success_rate': self.success_rate,
+            'detection_rate': self.detection_rate,
+            'impact_score': self.impact_score,
+            'execution_mode': self.execution_mode.value,
+            'technique_results': [
+                {
+                    'technique_id': r.technique_id,
+                    'technique_name': r.technique_name,
+                    'tactic': r.tactic,
+                    'status': r.status.value,
+                    'execution_time': r.execution_time,
+                    'output': r.output,
+                    'error': r.error,
+                    'detected': r.detected,
+                }
+                for r in self.technique_results
+            ],
+            'detection_gaps': self.detection_gaps,
+            'recommendations': self.recommendations
+        }, indent=2)
     
     def to_mitre_navigator(self) -> Dict[str, Any]:
         return {
@@ -301,7 +300,6 @@ class AdversaryEmulator(ABC):
         self.techniques: List[Technique] = []
         self.results: List[TechniqueResult] = []
         self.campaign_id = hashlib.md5(f"{name}_{time.time()}".encode()).hexdigest()[:8]
-        # ✅ FIX: Initialize detection_gaps
         self.detection_gaps = []
     
     @abstractmethod
@@ -345,7 +343,6 @@ class AdversaryEmulator(ABC):
         failed = total - successful
         detected = sum(1 for r in self.results if r.detected)
         
-        # ✅ FIX: Store detection gaps on self
         self.detection_gaps = self._identify_detection_gaps()
         
         return CampaignResult(
