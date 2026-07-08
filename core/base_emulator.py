@@ -240,23 +240,37 @@ class CampaignResult:
     recommendations: List[Dict[str, Any]] = field(default_factory=list)
     
     def to_json(self) -> str:
-        return json.dumps({
-            'campaign_id': self.campaign_id,
-            'campaign_name': self.campaign_name,
-            'start_time': self.start_time.isoformat(),
-            'end_time': self.end_time.isoformat(),
-            'duration_seconds': (self.end_time - self.start_time).total_seconds(),
-            'total_techniques': self.total_techniques,
-            'successful': self.successful,
-            'failed': self.failed,
-            'detected': self.detected,
-            'success_rate': self.success_rate,
-            'detection_rate': self.detection_rate,
-            'impact_score': self.impact_score,
-            'execution_mode': self.execution_mode.value,
-            'detection_gaps': self.detection_gaps,
-            'recommendations': self.recommendations
-        }, indent=2)
+    return json.dumps({
+        'campaign_id': self.campaign_id,
+        'campaign_name': self.campaign_name,
+        'start_time': self.start_time.isoformat(),
+        'end_time': self.end_time.isoformat(),
+        'duration_seconds': (self.end_time - self.start_time).total_seconds(),
+        'total_techniques': self.total_techniques,
+        'successful': self.successful,
+        'failed': self.failed,
+        'detected': self.detected,
+        'success_rate': self.success_rate,
+        'detection_rate': self.detection_rate,
+        'impact_score': self.impact_score,
+        'execution_mode': self.execution_mode.value,
+        # ✅ FIX P0-2: Add technique_results
+        'technique_results': [
+            {
+                'technique_id': r.technique_id,
+                'technique_name': r.technique_name,
+                'tactic': r.tactic,
+                'status': r.status.value,
+                'execution_time': r.execution_time,
+                'output': r.output,
+                'error': r.error,
+                'detected': r.detected,
+            }
+            for r in self.technique_results
+        ],
+        'detection_gaps': self.detection_gaps,
+        'recommendations': self.recommendations
+    }, indent=2)
     
     def to_mitre_navigator(self) -> Dict[str, Any]:
         return {
@@ -273,14 +287,17 @@ class CampaignResult:
 
 
 class AdversaryEmulator(ABC):
-    """Advanced adversary emulator base class"""
-    
     def __init__(self, name: str, config: Optional[Dict[str, Any]] = None):
         self.name = name
         self.config = config or {}
-        self.executor = TechniqueExecutor(
-            mode=ExecutionMode(self.config.get('mode', 'safe'))
-        )
+        
+        # ✅ FIX P0-1: Translate safe_mode to ExecutionMode
+        if self.config.get('safe_mode', True):
+            exec_mode = ExecutionMode.SAFE
+        else:
+            exec_mode = ExecutionMode.REAL
+        
+        self.executor = TechniqueExecutor(mode=exec_mode)
         self.techniques: List[Technique] = []
         self.results: List[TechniqueResult] = []
         self.campaign_id = hashlib.md5(f"{name}_{time.time()}".encode()).hexdigest()[:8]
