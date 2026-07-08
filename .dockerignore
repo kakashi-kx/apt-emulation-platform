@@ -1,0 +1,25 @@
+# Docker ignore file
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+logs/
+*.log
+*.json
+*.yaml
+.DS_Store
+.git/
+.gitignore
+README.md
+LICENSE
+*.md
+campaign_results.json
+techcorp_config.yaml
+user_config.yaml
