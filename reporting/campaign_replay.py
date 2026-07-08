@@ -20,7 +20,8 @@ class CampaignReplay:
         try:
             with open(self.results_file, 'r') as f:
                 self.campaign_data = json.load(f)
-        except:
+        except Exception as e:
+            print(f"❌ Failed to load {self.results_file}: {e}")
             self.campaign_data = None
     
     def replay(self, delay: float = 0.5):
@@ -43,26 +44,35 @@ class CampaignReplay:
             print(f"\n🎯 {campaign.get('campaign_name', 'Unknown Campaign')}")
             print("-" * 40)
             
-            techniques = campaign.get('techniques_executed', [])
-            detection_events = campaign.get('detection_events', [])
-            detected_names = [e.get('technique') for e in detection_events]
+            # ✅ FIX: Use 'technique_results' instead of 'techniques_executed'
+            technique_results = campaign.get('technique_results', [])
             
-            for i, tech in enumerate(techniques, 1):
-                tech_name = tech.get('name', 'Unknown')
-                detected = tech_name in detected_names
+            if not technique_results:
+                print("⚠️ No technique results found (campaign may have been run in safe mode)")
+                print(f"   Success Rate: {campaign.get('success_rate', 0)*100:.1f}%")
+                continue
+            
+            total = len(technique_results)
+            
+            for i, tech in enumerate(technique_results, 1):
+                tech_name = tech.get('technique_name', 'Unknown')
+                status = tech.get('status', 'unknown')
+                detected = tech.get('detected', False)
+                tech_id = tech.get('technique_id', '')
                 
                 # Visual progress
-                bar = "█" * i + "░" * (len(techniques) - i)
-                status = "🛡️ DETECTED" if detected else "✅ SUCCESS"
+                bar = "█" * i + "░" * (total - i)
+                status_display = "🛡️ DETECTED" if detected else "✅ SUCCESS"
                 
-                print(f"[{i}/{len(techniques)}] {tech_name}")
-                print(f"  {status}")
+                print(f"[{i}/{total}] {tech_name} ({tech_id})")
+                print(f"  {status_display}")
                 print(f"  Progress: [{bar}]")
+                print(f"  Status: {status}")
                 
                 time.sleep(delay)
             
             print("\n" + "="*60)
             print(f"📊 SUMMARY: {campaign.get('campaign_name')}")
-            print(f"   Success Rate: {campaign.get('overall_success_rate', 0)*100:.1f}%")
+            print(f"   Success Rate: {campaign.get('success_rate', 0)*100:.1f}%")
             print(f"   Detection Rate: {campaign.get('detection_rate', 0)*100:.1f}%")
             print("="*60)
