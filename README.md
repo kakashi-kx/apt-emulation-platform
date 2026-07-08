@@ -1,198 +1,184 @@
 
-#  APT Emulation Platform
 
-[![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)](https://python.org)
-[![MITRE ATT&CK](https://img.shields.io/badge/MITRE%20ATT%26CK-50%2B%20techniques-red)](https://attack.mitre.org)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Flask](https://img.shields.io/badge/Flask-2.2.5-blue)](https://flask.palletsprojects.com)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
-[![GitHub Stars](https://img.shields.io/github/stars/kakashi-kx/apt-emulation-platform?style=social)](https://github.com/kakashi-kx/apt-emulation-platform)
 
-## What Makes This Revolutionary
+<div align="center">
 
-Most security tools just scan for vulnerabilities. This platform **emulates real APT attacks** to show organizations exactly how they would be breached and how much it would cost.
+# 🛡️ APT Emulation Platform
 
-**Key Features:**
-- ✅ **Complete APT Emulation** - APT29, Lazarus, ransomware
-- ✅ **50+ MITRE ATT&CK Techniques** - Full attack sequences
-- ✅ **Web Interface** - Beautiful Flask dashboard
-- ✅ **Business Impact Analysis** - Quantify risk in dollars
-- ✅ **Actionable Remediation** - Priority-ordered fixes
-- ✅ **One-Click Campaigns** - Run attacks with a button
+### Enterprise-grade adversary emulation you can run against your own environment — safely, by default.
 
-## 📊 Real Results from TechCorp Assessment
+Emulate real APT29 (Cozy Bear), Lazarus Group, and ransomware operator tradecraft, mapped to MITRE ATT&CK, and find out what your detection stack actually catches — before a real attacker does.
 
-```
-┌─────────────────────────────────────────────────────────┐
-│  ATTACK SUCCESS RATE:    63.6%                         │
-│  DETECTION RATE:         18.2%                         │
-│  BUSINESS IMPACT:        $25-50M                       │
-│  TIME TO COMPROMISE:     4.2 hours                     │
-└─────────────────────────────────────────────────────────┘
-```
+[![CI](https://github.com/kakashi-kx/apt-emulation-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/kakashi-kx/apt-emulation-platform/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/kakashi-kx/apt-emulation-platform)](LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
+[![Docker Ready](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)](#-quickstart)
+![Stars](https://img.shields.io/github/stars/kakashi-kx/apt-emulation-platform?style=social)
+![Last Commit](https://img.shields.io/github/last-commit/kakashi-kx/apt-emulation-platform)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-##  Supported APT Groups
+[**Quickstart**](#-quickstart) · [**Features**](#-features) · [**Dashboard**](#-dashboard) · [**How it works**](#-how-it-works) · [**Comparison**](#-how-this-compares) · [**Roadmap**](#-roadmap)
 
-| APT Group | Description | Techniques | Risk Level |
-|-----------|-------------|------------|------------|
-| **APT29** | Russian state-sponsored (Cozy Bear) | 11 | CRITICAL |
-| **Lazarus** | North Korean state-sponsored | 7 | HIGH |
-| **Ransomware** | Modern ransomware operators | 7 | CRITICAL |
+</div>
 
-##  Quick Start
+<br>
 
-### Prerequisites
-- Python 3.9+
-- Git
+<div align="center">
+  <img src="docs/screenshots/dashboard.png" alt="APT Emulation Platform dashboard" width="850">
+</div>
 
-### Installation
+<br>
+
+## 🎯 Why this exists
+
+Most security teams don't actually know how many of their detection rules fire under real attacker tradecraft — they know how many rules they *have*. This platform closes that gap: it runs realistic, safe-by-default technique sequences modeled on real threat actors, tells you exactly which ones your stack missed, and hands you the artifacts to fix it — Sigma rules, a MITRE Navigator layer, and an exec-ready report — instead of just a pass/fail score.
+
+It's built for the same use case as Caldera or Atomic Red Team: purple-team exercises, detection engineering validation, and demonstrating security ROI to leadership. **Only run this against systems you own or are explicitly authorized to test.**
+
+## ✨ Features
+
+**Adversary emulation**
+- 🇷🇺 **APT29 (Cozy Bear)** — 11 techniques spanning spearphishing through data exfiltration, modeled on the SolarWinds-era playbook
+- 🇰🇵 **Lazarus Group** — financially-motivated and destructive tradecraft
+- 🔒 **Ransomware Operator** — the full encrypt-and-extort chain
+- 🧭 **25 techniques across 12 MITRE ATT&CK tactics**, every one tagged with its technique ID
+
+**Safe by design**
+- SAFE mode is the default — techniques are described, never executed, until you explicitly opt in
+- Isolated execution modes (`SAFE` / `DRY_RUN` / `SIMULATED` / `REAL`) instead of one code path doing everything
+- Rate-limited, hardened web API (secure cookies, CORS allowlist, random secret key, no debug mode in production)
+
+**Reporting & detection engineering**
+- 📊 **Executive + CISO-ready reports** — success rate, detection rate, and business impact scoring
+- 🧩 **MITRE ATT&CK Navigator export** — drop straight into [Navigator](https://mitre-attack.github.io/attack-navigator/) to visualize coverage gaps
+- 📐 **Sigma rule generation** — every undetected technique becomes a draft Sigma rule, portable to Splunk, Elastic, Sentinel, or any SIEM that speaks Sigma
+- 📈 **Trend analysis** — track detection coverage across repeated campaigns over time
+- 🎬 **Campaign replay** — step through exactly what ran and what got caught
+- 🔔 **Slack / Discord notifications** — post live campaign results to your team channel
+
+**Ops-ready**
+- 🐳 One-command Docker deployment with a non-root container user and health checks
+- ✅ CI pipeline that actually gates on test results
+- 🖥️ CLI for automation, or a full web dashboard for click-through assessments
+
+## 🖥️ Dashboard
+
+Pick a threat actor, tune detection maturity, and run the assessment — the dashboard streams results back with a full technique-by-technique breakdown.
+
+<div align="center">
+  <img src="docs/screenshots/results.png" alt="Live campaign results in the dashboard" width="850">
+</div>
+
+## 🚀 Quickstart
+
+### Docker (fastest)
 
 ```bash
-# Clone the repository
 git clone https://github.com/kakashi-kx/apt-emulation-platform.git
 cd apt-emulation-platform
+docker compose up
+```
 
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+Then open **http://localhost:5000**.
 
-# Install dependencies
+### CLI
+
+```bash
+git clone https://github.com/kakashi-kx/apt-emulation-platform.git
+cd apt-emulation-platform
 pip install -r requirements.txt
 
-# Run the web interface
-python3 web/app.py
+# Always start here — SAFE mode describes techniques, never executes them
+python3 main.py --apt-group apt29 --safe-mode
 ```
 
-### Open in Browser
-```
-http://localhost:5000
-```
-
-##  Web Interface Features
-
-- **Modern Dashboard** - Clean, professional UI
-- **One-Click Campaigns** - Run APT attacks with a single click
-- **Real-Time Results** - Watch techniques execute live
-- **Detection Tracking** - See which techniques were detected
-- **Business Impact** - Quantified risk in dollars
-
-##  Customizing for Your Environment
-
-### Step 1: Copy the Configuration Template
-```bash
-cp user_config.yaml.example user_config.yaml
-```
-
-### Step 2: Edit with Your Details
-```yaml
-company:
-  name: "Your Company"
-  domain: "yourcompany.com"
-
-email:
-  server: "smtp.yourcompany.com"
-  test_recipient: "security@yourcompany.com"
-
-edr:
-  vendor: "crowdstrike"  # or sentinelone, defender
-
-network:
-  domain: "yourcompany.local"
-```
-
-### Step 3: Run with Your Configuration
-```bash
-python3 main.py --config user_config.yaml --apt-group apt29
-```
-
-## 📁 Project Structure
+<details>
+<summary><strong>Sample output</strong></summary>
 
 ```
-apt-emulation-platform/
-├── web/                    # Web interface
-│   ├── app.py             # Flask application
-│   └── templates/
-│       └── index.html     # Main dashboard
-├── apt_profiles/          # APT group definitions
-│   ├── apt29.py          # APT29 (Cozy Bear)
-│   ├── lazarus.py        # Lazarus Group
-│   └── ransomware.py     # Ransomware operators
-├── core/                  # Core emulation engine
-├── emulation_engine/      # Campaign management
-├── reporting/             # Report generation
-├── utils/                 # Utilities
-├── main.py               # CLI interface
-├── user_config.yaml.example  # Configuration template
-└── requirements.txt      # Dependencies
-```
-
-## 📊 Sample Output
-
-```bash
-$ python3 main.py --apt-group apt29 --safe-mode
-
-============================================================
-APT EMULATION PLATFORM - STARTING
-============================================================
-
- ARGUMENTS:
-   APT Group: apt29
-   Safe Mode: True
-
- Loading Campaign Manager...
-✅ Loaded APT29 emulator
-✅ Loaded Lazarus emulator
-✅ Loaded Ransomware emulator
-
- Available APT Groups: ['apt29', 'lazarus', 'ransomware']
-
- Running apt29 campaign...
-
-[1/11] Executing Spearphishing Test...
-  ✅ Success! Detected: False
-
-[2/11] Executing PowerShell Execution...
-  ✅ Success! Detected: True
-
-... (continues)
-
 ============================================================
 📊 RESULTS SUMMARY
 ============================================================
 
 🎯 APT29 (Cozy Bear)
-   Success Rate: 63.6%
-   Detection Rate: 18.2%
-   Impact Score: 10.0/10
+   Success Rate: 100.0%
+   Detection Rate: 0.0%
+   Impact Score: 8.8/10
+   Total Techniques: 11
+   ✅ Successful: 11
+   ❌ Failed: 0
+   🛡️ Detected: 0
 
 ============================================================
-✅ COMPLETE!
+✅ COMPLETE! Report saved to campaign_results.json
 ============================================================
 ```
+</details>
 
-## 🛠️ Tech Stack
+### Web (manual, without Docker)
 
-| Category | Technologies |
-|----------|--------------|
-| **Backend** | Python, Flask |
-| **Security** | MITRE ATT&CK Framework |
-| **Frontend** | HTML5, CSS3, JavaScript |
-| **Data** | JSON, YAML |
-| **Testing** | pytest |
+```bash
+pip install -r requirements.txt -r requirements-web.txt
+python3 web/app.py
+```
+
+## 🧠 How it works
+
+```mermaid
+flowchart LR
+    CLI["CLI (main.py)"] --> CM[Campaign Manager]
+    WEB["Web Dashboard"] --> CM
+    CM --> A[APT29 Profile]
+    CM --> L[Lazarus Profile]
+    CM --> R[Ransomware Profile]
+    A & L & R --> EX[Technique Executor]
+    EX -->|SAFE / DRY_RUN / SIMULATED, default| RES[Campaign Result]
+    EX -.->|REAL, explicit opt-in only| RES
+    RES --> REPORT[Executive Report]
+    RES --> SIGMA[Sigma Rules]
+    RES --> NAV["MITRE Navigator Layer"]
+    RES --> TREND[Trend Analysis]
+    RES --> REPLAY[Campaign Replay]
+    RES --> NOTIFY["Slack / Discord"]
+```
+
+Each technique carries its MITRE ATT&CK ID, tactic, detection risk, and success rate. The executor runs it through whichever mode you've selected, and every downstream feature — reports, Sigma rules, the Navigator export — reads off the same result set, so what you see in the dashboard is what ends up in your SIEM.
+
+## ⚖️ How this compares
+
+| | This platform | MITRE Caldera | Atomic Red Team |
+|---|---|---|---|
+| Setup | `docker compose up` | Server + agent install | Framework install |
+| Threat-actor profiles | APT29, Lazarus, Ransomware | Adversary plugins | Individual tests, no narrative |
+| Sigma rule generation | ✅ Automatic from gaps | ❌ | ❌ |
+| MITRE Navigator export | ✅ Built in | Via plugin | Manual |
+| Executive/CISO reporting | ✅ Built in | ❌ | ❌ |
+| Web dashboard | ✅ | ✅ | ❌ (CLI only) |
+| Safe-by-default execution | ✅ | Depends on plugin | ✅ |
+
+Not a replacement for Caldera's agent-based lateral emulation or Atomic Red Team's sheer test-library size — this trades breadth for a tighter loop from *technique run* → *detection gap* → *Sigma rule* → *exec report*.
+
+## 🗺️ Roadmap
+
+- [ ] **Adaptive AI adversary** — an LLM-driven engine that picks its next technique based on what got detected so far, instead of a fixed sequence
+- [ ] Expand technique coverage per profile (25 → 100+)
+- [ ] Cloud (AWS/Azure/GCP) and container/Kubernetes technique sets
+- [ ] Expose `SIMULATED` mode (probabilistic success/detection) through the CLI and web UI
+- [ ] Plugin system for community-contributed threat-actor profiles
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please open an issue or submit a PR.
+Issues and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). New technique definitions, additional threat-actor profiles, and SIEM export formats are especially appreciated.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing`)
-5. Open a Pull Request
+## 🔒 Security
+
+Found a vulnerability? Please see [SECURITY.md](SECURITY.md) for responsible disclosure instead of opening a public issue.
 
 ## 📄 License
 
-MIT License - See [LICENSE](LICENSE) file for details
+MIT — see [LICENSE](LICENSE).
+
+---
 
 ## ⚠️ Disclaimer
 
@@ -206,8 +192,17 @@ This tool is for **security testing and educational purposes only**. Only use ag
 
 ---
 
-**⭐ Star this repo if you found it useful!**
+<div align="center">
 
-*Created with ❤️ by kakashi-kx | Security Researcher*
+If this is useful to you, a ⭐ helps other people find it.
 
+</div>
+
+<div align="center">
+
+  *Created with ❤️ by kakashi-kx/kakashi4kx | Security Researcher*
+
+</div>
+
+---
 
