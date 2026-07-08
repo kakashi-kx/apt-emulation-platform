@@ -16,7 +16,8 @@ print("="*60)
 def main():
     parser = argparse.ArgumentParser(description="APT Emulation Platform")
     parser.add_argument("--apt-group", choices=["apt29", "lazarus", "ransomware", "all"], default="all")
-    parser.add_argument("--safe-mode", action="store_true")
+    parser.add_argument("--real", action="store_true",
+        help="DANGEROUS: execute techniques for real instead of simulating.")
     parser.add_argument("--config", type=str, default=None)
     parser.add_argument("--target", type=str, default="production")
     parser.add_argument("--detection-maturity", type=float, default=0.5)
@@ -37,7 +38,7 @@ def main():
     target_env = {
         'name': args.target,
         'detection_maturity': args.detection_maturity,
-        'safe_mode': args.safe_mode
+        'safe_mode': not args.real  # Default: SAFE unless --real is explicitly passed
     }
     
     manager = CampaignManager(target_env)
