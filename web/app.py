@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Dict, Any
 import logging
 from logging.handlers import RotatingFileHandler
+import glob 
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -137,6 +138,49 @@ def run_campaign():
         
     except Exception as e:
         logger.error(f"Campaign failed: {e}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/export/mitre', methods=['GET'])
+def export_mitre_navigator():
+    """Export results as MITRE ATT&CK Navigator layer"""
+    try:
+        # Get the latest campaign results
+        files = glob.glob('campaign_results.json')
+        if not files:
+            return jsonify({'error': 'No campaign results found'}), 404
+        
+        with open(files[-1], 'r') as f:
+            data = json.load(f)
+        
+        # Convert to MITRE Navigator format
+        navigator_layer = {
+            "name": "APT Emulation Results",
+            "version": "3.0",
+            "domain": "enterprise-attack",
+            "description": "Detection gaps identified from APT emulation",
+            "techniques": []
+        }
+        
+        # Extract techniques from campaigns
+        for campaign in data.get('campaigns', []):
+            for tech in campaign.get('techniques_executed', []):
+                # Find if this technique was detected
+                detected = False
+                for event in campaign.get('detection_events', []):
+                    if event.get('technique') == tech.get('name'):
+                        detected = True
+                        break
+                
+                navigator_layer['techniques'].append({
+                    "techniqueID": tech.get('id', 'T0000'),
+                    "score": 100 if detected else 50,
+                    "comment": tech.get('name', 'Unknown')
+                })
+        
+        return jsonify(navigator_layer)
+        
+    except Exception as e:
+        logger.error(f"MITRE export failed: {e}", exc_info=True)
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/health')
