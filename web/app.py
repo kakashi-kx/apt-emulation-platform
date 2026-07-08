@@ -145,11 +145,11 @@ def run_campaign():
 # ----------------------------------------------------------------------------
 @app.route('/api/export/mitre', methods=['GET'])
 def export_mitre_navigator():
-    """
-    Export results as MITRE ATT&CK Navigator layer
-    This is the standard format used by blue teams worldwide
-    """
+    """Export results as MITRE ATT&CK Navigator layer"""
     try:
+        import glob
+        import json
+        
         # Get the latest campaign results
         files = glob.glob('campaign_results.json')
         if not files:
@@ -157,6 +157,9 @@ def export_mitre_navigator():
         
         with open(files[-1], 'r') as f:
             data = json.load(f)
+        
+        # Debug: Print what's in the file
+        logger.info(f"Campaign data keys: {data.keys()}")
         
         # Build MITRE Navigator Layer
         navigator_layer = {
@@ -167,27 +170,45 @@ def export_mitre_navigator():
             "techniques": []
         }
         
-        # Extract techniques from campaigns
-        for campaign in data.get('campaigns', []):
-            for tech in campaign.get('techniques_executed', []):
-                # Check if this technique was detected
-                detected = False
-                for event in campaign.get('detection_events', []):
-                    if event.get('technique') == tech.get('name'):
-                        detected = True
-                        break
+        # Handle different data structures
+        campaigns = data.get('campaigns', [])
+        
+        for campaign in campaigns:
+            # Try different possible field names
+            techniques = campaign.get('techniques_executed', [])
+            if not techniques:
+                techniques = campaign.get('technique_results', [])
+            if not techniques:
+                techniques = campaign.get('techniques', [])
+            
+            detection_events = campaign.get('detection_events', [])
+            detected_techniques = [e.get('technique') for e in detection_events]
+            
+            for tech in techniques:
+                # Handle both dict and object formats
+                if isinstance(tech, dict):
+                    tech_id = tech.get('id', 'T0000')
+                    tech_name = tech.get('name', 'Unknown')
+                    tech_tactic = tech.get('tactic', 'Unknown')
+                else:
+                    # If it's an object with attributes
+                    tech_id = getattr(tech, 'id', 'T0000')
+                    tech_name = getattr(tech, 'name', 'Unknown')
+                    tech_tactic = getattr(tech, 'tactic', 'Unknown')
+                
+                detected = tech_name in detected_techniques
                 
                 navigator_layer['techniques'].append({
-                    "techniqueID": tech.get('id', 'T0000'),
+                    "techniqueID": tech_id,
                     "score": 100 if detected else 50,
-                    "comment": tech.get('name', 'Unknown'),
+                    "comment": tech_name,
                     "metadata": [
-                        {"name": "tactic", "value": tech.get('tactic', 'Unknown')},
+                        {"name": "tactic", "value": tech_tactic},
                         {"name": "detected", "value": str(detected)}
                     ]
                 })
         
-        logger.info(f"MITRE Navigator export successful: {len(navigator_layer['techniques'])} techniques")
+        logger.info(f"MITRE Navigator export: {len(navigator_layer['techniques'])} techniques")
         return jsonify(navigator_layer)
         
     except Exception as e:
