@@ -24,9 +24,13 @@ def main():
     
     args = parser.parse_args()
     
+    # Safe mode is the default (not args.real)
+    safe_mode = not args.real
+    
     print(f"\n📋 ARGUMENTS:")
     print(f"   APT Group: {args.apt_group}")
-    print(f"   Safe Mode: {args.safe_mode}")
+    print(f"   Safe Mode: {safe_mode} (default)")
+    print(f"   Real Mode: {args.real} (DANGEROUS)")
     print(f"   Config: {args.config}")
     print(f"   Target: {args.target}")
     print(f"   Detection Maturity: {args.detection_maturity}")
@@ -38,7 +42,7 @@ def main():
     target_env = {
         'name': args.target,
         'detection_maturity': args.detection_maturity,
-        'safe_mode': not args.real  # Default: SAFE unless --real is explicitly passed
+        'safe_mode': safe_mode  # Default: True unless --real is passed
     }
     
     manager = CampaignManager(target_env)
